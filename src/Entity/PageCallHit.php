@@ -2,8 +2,8 @@
 
 namespace Zhortein\SeoTrackingBundle\Entity;
 
-use Zhortein\SeoTrackingBundle\Repository\PageCallHitRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Zhortein\SeoTrackingBundle\Repository\PageCallHitRepository;
 
 #[ORM\Entity(repositoryClass: PageCallHitRepository::class)]
 #[ORM\Table(name: 'seo_page_call_hit')]
@@ -149,6 +149,7 @@ class PageCallHit
     public function setLanguage(?string $language): static
     {
         $this->language = $language;
+
         return $this;
     }
 
@@ -160,6 +161,7 @@ class PageCallHit
     public function setScreenWidth(?int $screenWidth): static
     {
         $this->screenWidth = $screenWidth;
+
         return $this;
     }
 
@@ -171,7 +173,7 @@ class PageCallHit
     public function setScreenHeight(?int $screenHeight): static
     {
         $this->screenHeight = $screenHeight;
+
         return $this;
     }
-
 }

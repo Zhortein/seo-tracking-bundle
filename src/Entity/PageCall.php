@@ -2,11 +2,11 @@
 
 namespace Zhortein\SeoTrackingBundle\Entity;
 
-use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 
 #[ORM\Entity(repositoryClass: PageCallRepository::class)]
 #[ORM\Table(name: 'seo_page_call')]

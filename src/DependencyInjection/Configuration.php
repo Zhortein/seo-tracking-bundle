@@ -4,7 +4,6 @@ namespace Zhortein\SymfonyToolboxBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
-use Zhortein\SymfonyToolboxBundle\Service\Datatables\PaginatorFactory;
 
 class Configuration implements ConfigurationInterface
 {
@@ -16,8 +15,6 @@ class Configuration implements ConfigurationInterface
      *      isatis_concept_api_key: ''
      *      isatis_concept_api_endpoint: ''
      *      auto_send: false
-     *
-     * @return TreeBuilder
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {

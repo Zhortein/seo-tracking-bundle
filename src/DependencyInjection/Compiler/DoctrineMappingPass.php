@@ -15,7 +15,7 @@ class DoctrineMappingPass implements CompilerPassInterface
         }
 
         $mappings = [
-            realpath(__DIR__ . '/../../Entity') => 'SeoTrackingBundle\Entity',
+            realpath(__DIR__.'/../../Entity') => 'SeoTrackingBundle\Entity',
         ];
 
         $driver = DoctrineOrmMappingsPass::createAttributeMappingDriver($mappings, []);

@@ -2,9 +2,9 @@
 
 namespace Zhortein\SeoTrackingBundle\Repository;
 
-use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Zhortein\SeoTrackingBundle\Entity\PageCall;
 
 /**
  * @extends ServiceEntityRepository<PageCall>

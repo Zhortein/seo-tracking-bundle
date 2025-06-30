@@ -11,4 +11,3 @@ class DummyTest extends TestCase
         $this->assertTrue(true);
     }
 }
-

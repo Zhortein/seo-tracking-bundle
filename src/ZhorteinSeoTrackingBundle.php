@@ -42,4 +42,3 @@ class ZhorteinSeoTrackingBundle extends AbstractBundle
         return false !== $this->extension ? $this->extension : null;
     }
 }
-

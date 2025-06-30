@@ -2,15 +2,15 @@
 
 namespace Zhortein\SeoTrackingBundle\Controller;
 
-use Zhortein\SeoTrackingBundle\Entity\PageCall;
-use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
-use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
-use Zhortein\SeoTrackingBundle\Repository\PageCallHitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Zhortein\SeoTrackingBundle\Entity\PageCall;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Repository\PageCallHitRepository;
+use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 
 class PageCallController extends AbstractController
 {
@@ -78,7 +78,7 @@ class PageCallController extends AbstractController
 
         $hit = $repository->find($hitId);
 
-        if (!$hit || $hit->getExitedAt() !== null) {
+        if (!$hit || null !== $hit->getExitedAt()) {
             return new JsonResponse(['error' => 'Invalid or already completed hit'], 400);
         }
 
