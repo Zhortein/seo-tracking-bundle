@@ -1,0 +1,12 @@
+seo_tracking_page_call:
+  path: /zhortein/seo-tracking/page-call/track
+  controller: Zhortein\SeoTrackingBundle\Controller\PageCallController::track
+  methods: [POST]
+  options:
+    expose: true
+seo_tracking_page_exit:
+  path: /zhortein/seo-tracking/page-call/exit
+  controller: Zhortein\SeoTrackingBundle\Controller\PageCallController::exit
+  methods: [POST]
+  options:
+    expose: true

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit
+        bootstrap="tests/bootstrap.php"
+        cacheDirectory=".phpunit.cache"
+        colors="true"
+        executionOrder="depends,defects"
+        failOnWarning="true"
+        failOnRisky="true"
+        beStrictAboutTestsThatDoNotTestAnything="true"
+        stopOnFailure="false"
+        testdox="false"
+>
+    <php>
+        <ini name="intl.default_locale" value="fr_FR" />
+        <ini name="display_errors" value="1"/>
+        <ini name="error_reporting" value="-1"/>
+        <server name="APP_ENV" value="test" force="true"/>
+        <server name="SHELL_VERBOSITY" value="-1"/>
+    </php>
+
+    <testsuites>
+        <testsuite name="Zhortein SEO Tracking Bundle -  Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>

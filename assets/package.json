@@ -1,0 +1,19 @@
+{
+  "name": "@zhortein/sseo-tracking-bundle",
+  "version": "1.0.0",
+  "symfony": {
+    "controllers": {
+      "datatable": {
+        "main": "dist/tracking_controller.js",
+        "fetch": "lazy",
+        "enabled": true
+      }
+    },
+    "importmap": {
+      "@hotwired/stimulus": "^3.0.0"
+    }
+  },
+  "peerDependencies": {
+    "@hotwired/stimulus": "^3.0.0"
+  }
+}
