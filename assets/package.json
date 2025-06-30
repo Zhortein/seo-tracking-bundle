@@ -1,9 +1,9 @@
 {
-  "name": "@zhortein/sseo-tracking-bundle",
+  "name": "@zhortein/seo-tracking-bundle",
   "version": "1.0.0",
   "symfony": {
     "controllers": {
-      "datatable": {
+      "tracking": {
         "main": "dist/tracking_controller.js",
         "fetch": "lazy",
         "enabled": true

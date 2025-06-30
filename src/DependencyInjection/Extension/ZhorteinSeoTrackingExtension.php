@@ -53,7 +53,7 @@ YAML);
         $container->prependExtensionConfig('framework', [
             'asset_mapper' => [
                 'paths' => [
-                    __DIR__.'/../../assets/dist' => '@zhortein/seo-tracking-bundle',
+                    __DIR__.'/../../../assets/dist' => '@zhortein/seo-tracking-bundle',
                 ],
             ],
         ]);
