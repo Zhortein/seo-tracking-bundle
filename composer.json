@@ -5,7 +5,7 @@
   "description": "This bundle is dedicated to Symfony applications and provide metrics gathering on page calls.",
   "homepage": "https://www.david-renard.fr",
   "license": "MIT",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "authors": [
     {
       "name": "David Renard",
