@@ -6,6 +6,8 @@ export default class extends Controller {
 
         const params = new URLSearchParams(window.location.search);
 
+        const previousHitId = sessionStorage.getItem('page-call-hit-id');
+
         const payload = {
             url: url,
             route: this.element.dataset.route || null,
@@ -20,6 +22,7 @@ export default class extends Controller {
                 width: window.screen.width,
                 height: window.screen.height
             },
+            parentHitId: previousHitId ? parseInt(previousHitId) : null,
         };
 
         fetch('/zhortein/seo-tracking/page-call/track', {

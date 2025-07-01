@@ -45,6 +45,10 @@ class PageCallHit
     #[ORM\Column(nullable: true)]
     private ?int $screenHeight = null;
 
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(name: 'parent_hit_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?self $parentHit = null;
+
     public function updateDuration(): void
     {
         if ($this->calledAt && $this->exitedAt) {
@@ -173,6 +177,18 @@ class PageCallHit
     public function setScreenHeight(?int $screenHeight): static
     {
         $this->screenHeight = $screenHeight;
+
+        return $this;
+    }
+
+    public function getParentHit(): ?self
+    {
+        return $this->parentHit;
+    }
+
+    public function setParentHit(?self $parentHit): static
+    {
+        $this->parentHit = $parentHit;
 
         return $this;
     }

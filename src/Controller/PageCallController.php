@@ -17,11 +17,24 @@ use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 class PageCallController extends AbstractController
 {
     #[Route('/page-call/track', name: 'page_call_track', methods: ['POST'])]
-    public function track(Request $request, PageCallRepository $pageCallRepository, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
+    public function track(Request $request, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true);
+
+        if (!is_array($data)) {
+            return new JsonResponse(['error' => 'Invalid JSON payload'], 400);
+        }
+
+        if (empty($data['url'])) {
+            return new JsonResponse(['error' => 'Missing URL'], 400);
+        }
+
         $nowImmutable = new \DateTimeImmutable();
         $now = new \DateTime();
+
+        $pageCallRepository = $em->getRepository(PageCall::class);
+        $pageCallHitRepository = $em->getRepository(PageCallHit::class);
 
         $pageCall = $pageCallRepository->findOneBy([
             'url' => $data['url'],
@@ -65,8 +78,21 @@ class PageCallController extends AbstractController
             ->setCalledAt($nowImmutable)
             ->setScreenWidth($screen['width'] ?? null)
             ->setScreenHeight($screen['height'] ?? null);
+
+        if (!empty($data['parentHitId'])) {
+            $parentHit = $pageCallHitRepository->find($data['parentHitId']);
+            if ($parentHit) {
+                $hit->setParentHit($parentHit);
+            }
+        }
+
         $em->persist($hit);
-        $em->flush();
+
+        try {
+            $em->flush();
+        } catch (\Throwable $e) {
+            return new JsonResponse(['error' => 'Database error', 'details' => $e->getMessage()], 500);
+        }
 
         $dispatcher->dispatch(new PageCallTrackedEvent($pageCall, $hit));
 
@@ -74,7 +100,7 @@ class PageCallController extends AbstractController
     }
 
     #[Route('/page-call/exit', name: 'page_call_exit', methods: ['POST'])]
-    public function exit(Request $request, PageCallHitRepository $repository, EntityManagerInterface $em): JsonResponse
+    public function exit(Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $hitId = $data['hitId'] ?? null;
@@ -83,6 +109,7 @@ class PageCallController extends AbstractController
             return new JsonResponse(['error' => 'Missing hitId'], 400);
         }
 
+        $repository = $em->getRepository(PageCallHit::class);
         $hit = $repository->find($hitId);
 
         if (!$hit || null !== $hit->getExitedAt()) {
