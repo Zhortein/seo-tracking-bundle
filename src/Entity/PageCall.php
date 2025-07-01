@@ -242,5 +242,6 @@ class PageCall
     public function setBot(bool $bot): static
     {
         $this->bot = $bot;
+        return $this;
     }
 }

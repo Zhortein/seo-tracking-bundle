@@ -217,6 +217,7 @@ class PageCallHit
     public function setBot(bool $bot): static
     {
         $this->bot = $bot;
+        return $this;
     }
 
     public function getDelaySincePreviousHit(): ?int
