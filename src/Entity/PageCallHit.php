@@ -68,7 +68,8 @@ class PageCallHit
         }
 
         if (null !== $this->parentHit && $this->parentHit->getCalledAt() && $this->calledAt) {
-            $this->delaySincePreviousHit = $this->parentHit->getCalledAt()->getTimestamp() - $this->calledAt->getTimestamp();
+            $delay = $this->calledAt->getTimestamp() - $this->parentHit->getCalledAt()->getTimestamp();
+            $this->delaySincePreviousHit = max(0, $delay);
         }
     }
 
