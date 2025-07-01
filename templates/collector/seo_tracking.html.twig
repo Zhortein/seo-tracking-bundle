@@ -25,8 +25,8 @@
     <p><strong>{{ collector.route }}</strong></p>
 
     <h3>Route Parameters</h3>
-    <pre>{{ collector.routeParams|default({})|yaml }}</pre>
+    <pre>{{ collector.routeParams|default({})|yaml_dump }}</pre>
 
     <h3>UTM Parameters</h3>
-    <pre>{{ collector.utm|default({})|yaml }}</pre>
+    <pre>{{ collector.utm|default({})|yaml_dump }}</pre>
 {% endblock %}
