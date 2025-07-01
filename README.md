@@ -15,6 +15,15 @@ If you're not using Symfony Flex, enable the bundle manually in config/bundles.p
 Zhortein\SeoTrackingBundle\SeoTrackingBundle::class => ['all' => true],
 ```
 
+## ⚠️ Database migration required!
+
+After installing the bundle, and sometimes upgrading the bundle (check the [CHANGELOG](./CHANGELOG.md)), you must run a migration to create the required database tables:
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+```
+If you're using custom naming strategies or a prefixed schema, review the generated migration before applying it.
+
 ## ⚙️ Usage
 To enable tracking, include the Stimulus controller in your layout or any page you want to track:
 
@@ -86,6 +95,9 @@ This entity stores information related to a visit (hit) and is related to a Page
 * language: navigator language (if provided by the navigator)
 * screenWidth: screen width in pixels (if provided by the navigator)
 * screenHeight: screen height in pixels (if provided by the navigator)
+* parentHit: previous PageCalledHit if available, useful to reconstruct a visitor flow across multiple pages.
+
+> Note: `parentHit` does not identify users, it only links anonymous visits together. It is designed to remain GDPR-compliant when used properly.
 
 ## 🔁 Listen to PageCallTrackedEvent
 
