@@ -3,8 +3,8 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static values = {
         type: { type: String, default: 'generic' },
-        route: { type: String, default: '' },
-        routeArgs: { type: Array, default: [] },
+        route: { type: String, default: null },
+        routeArgs: { type: Array, default: null },
     }
 
     connect() {
