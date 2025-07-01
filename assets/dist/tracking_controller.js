@@ -53,7 +53,7 @@ export default class extends Controller {
 
     disconnect() {
         document.removeEventListener('visibilitychange', this.onVisibilityChange);
-
+    }
 
     onVisibilityChange = () => {
         if (document.visibilityState === 'hidden') {
