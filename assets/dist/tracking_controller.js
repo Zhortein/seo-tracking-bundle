@@ -31,7 +31,7 @@ export default class extends Controller {
                 title: document.title,
                 type: this.typeValue,
             };
-console.log(payload);
+
             fetch('/zhortein/seo-tracking/page-call/track', {
                 method: 'POST',
                 headers: {
