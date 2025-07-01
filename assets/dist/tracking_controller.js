@@ -16,7 +16,7 @@ export default class extends Controller {
             const payload = {
                 url: url,
                 route: this.routeValue || null,
-                routeArgs: this.routeArgsValue ? JSON.parse(this.routeArgsValue) : null,
+                routeArgs: this.routeArgsValue ?? null,
                 campaign: params.get('utm_campaign'),
                 medium: params.get('utm_medium'),
                 source: params.get('utm_source'),
