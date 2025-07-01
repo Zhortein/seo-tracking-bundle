@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.2.0] – 2025-07-01
+
+> ⚠️ **This version requires a Doctrine migration** (new fields in `PageCall` and `PageCallHit`)
+
+### ✨ Added
+- Field `bot` in `PageCall`: detects and flags bot-related traffic.
+- Fields in `PageCallHit`:
+    - `bot`: flags bot visits based on User-Agent and heuristics.
+    - `pageTitle`: stores the document title (provided by JS).
+    - `delaySincePreviousHit`: calculates delay (in seconds) since `parentHit` if available.
+    - `pageType`: stores an optional value representing the semantic type of the page (e.g. `home`, `form`, `contact`, etc.).
+- Fallback handling for Stimulus tracking controller using HTML `data-*` attributes and `Values API`.
+
+### 🧰 Developer Experience
+- Updated README.md with new examples, shields, and clearer usage instructions.
+- Improved exception handling in Stimulus controller.
+- Added JS fallback in case of execution errors to ensure graceful degradation.
+
+---
+
 ## [1.1.0] – 2025-07-01
 
 > ⚠️ **This version needs to create a Doctrine migration**

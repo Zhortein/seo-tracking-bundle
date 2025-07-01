@@ -1,5 +1,9 @@
-# seo-tracking-bundle
+# SEO Tracking Bundle
 Symfony bundle to track page views, UTM campaigns and basic engagement, with optional SEO insights integration.
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/zhortein/seo-tracking-bundle.svg)](https://packagist.org/packages/zhortein/seo-tracking-bundle)
+[![Total Downloads](https://img.shields.io/packagist/dt/zhortein/seo-tracking-bundle.svg)](https://packagist.org/packages/zhortein/seo-tracking-bundle)
+[![License](https://img.shields.io/packagist/l/zhortein/seo-tracking-bundle.svg)](https://github.com/Zhortein/seo-tracking-bundle/blob/main/LICENSE)
 
 ## 📦 Installation
 
@@ -25,16 +29,21 @@ php bin/console doctrine:migrations:migrate
 If you're using custom naming strategies or a prefixed schema, review the generated migration before applying it.
 
 ## ⚙️ Usage
-To enable tracking, include the Stimulus controller in your layout or any page you want to track:
+To enable tracking, include the [Stimulus](https://stimulus.hotwired.dev/) controller in your layout or any page you want to track.
 
+Add the following to your `<body>` tag to enable tracking:
 ```twig
 <body {{ stimulus_controller('zhortein--seo-tracking-bundle--tracking', {
         route: app.request.attributes.get('_route'),
-        routeArgs: app.request.attributes.get('_route_params')
-    }) }}
+        routeArgs: app.request.attributes.get('_route_params'),
+        type: 'home'
+    }) }}>
 ```
 
 We recommend placing the tracking call as early as possible in your page. The ```<body>``` tag is a good place for this.
+
+The `type` value is optional and allows you to define the nature of the page (e.g. `home`, `contact`, `form`, etc.).  
+This helps categorize traffic for SEO or UX analytics purposes.
 
 ## 🧠 What does this bundle track?
 
@@ -66,8 +75,11 @@ Tracked data includes:
 
 ## 📐 Data model overview
 
+> PageCall groups traffic based on UTM parameters and URL.  
+> PageCallHit represents each individual visit or hit within that group.
+
 ### PageCall
-This entity store Page calls grouped by their UTM values, with counting calls. It's related to a collection of hits.
+This entity stores Page calls grouped by their UTM values, with counting calls. It's related to a collection of hits.
 
 * url: URL called
 * route: Symfony route called
@@ -81,13 +93,14 @@ This entity store Page calls grouped by their UTM values, with counting calls. I
 * lastCalledAt: datetime of the last call
 * firstCalledAt: datetime of the first call
 * hits: related PageCallHits (see below)
+* bot: true if this call was made by a bot
 
 ### PageCallHit
 This entity stores information related to a visit (hit) and is related to a PageCall:
 
 * pageCall: related PageCall
 * referrer: URL of the referrer
-* userAgent: received USer Agent, raw format
+* userAgent: received User Agent, raw format
 * anonymizedIP: IP address of the visitor anonymized (GDPR compliance)
 * calledAt: datetime of the call
 * exitedAt: datetime of page exit
@@ -95,7 +108,11 @@ This entity stores information related to a visit (hit) and is related to a Page
 * language: navigator language (if provided by the navigator)
 * screenWidth: screen width in pixels (if provided by the navigator)
 * screenHeight: screen height in pixels (if provided by the navigator)
-* parentHit: previous PageCalledHit if available, useful to reconstruct a visitor flow across multiple pages.
+* parentHit: previous PageCallHit if available, useful to reconstruct a visitor flow across multiple pages.
+* bot: true if the hit was made by a bot.
+* pageTitle: page title, if provided.
+* delaySincePreviousHit: delay in seconds between current hit and its parent.
+* pageType: page data type, if provided.
 
 > Note: `parentHit` does not identify users, it only links anonymous visits together. It is designed to remain GDPR-compliant when used properly.
 
