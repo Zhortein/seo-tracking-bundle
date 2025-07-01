@@ -10,7 +10,7 @@
 
         <service id="ZhorTein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector">
             <tag name="data_collector"
-                 template="@SeoTracking/collector/seo_tracking.html.twig"
+                 template="@ZhorTeinSeoTracking/collector/seo_tracking.html.twig"
                  id="seo_tracking"
                  priority="0"/>
         </service>
