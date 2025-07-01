@@ -3,6 +3,8 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static values = {
         type: { type: String, default: 'generic' },
+        route: { type: String, default: '' },
+        routeArgs: { type: Array, default: [] },
     }
 
     connect() {
@@ -13,8 +15,8 @@ export default class extends Controller {
 
             const payload = {
                 url: url,
-                route: this.element.dataset.route || null,
-                routeArgs: this.element.dataset.routeArgs ? JSON.parse(this.element.dataset.routeArgs) : null,
+                route: this.routeValue || null,
+                routeArgs: this.routeArgsValue ? JSON.parse(this.routeArgsValue) : null,
                 campaign: params.get('utm_campaign'),
                 medium: params.get('utm_medium'),
                 source: params.get('utm_source'),
