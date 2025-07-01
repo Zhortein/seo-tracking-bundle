@@ -20,19 +20,18 @@ final class SeoTrackingExtension
 
         $controller = 'zhortein--seo-tracking-bundle--tracking';
 
+        $attr = sprintf('data-controller="%s"', htmlspecialchars($controller, ENT_QUOTES));
+
         $data = [
             'route' => $route,
-            'routeArgs' => $routeArgs,
+            'route-args' => $routeArgs,
             'type' => $type,
         ];
 
-        $controllerSafe = htmlspecialchars($controller, ENT_QUOTES);
-        $attr = sprintf('data-controller="%s"', $controllerSafe);
-
         foreach ($data as $key => $value) {
             $attr .= sprintf(
-                ' data-%s-%s-value=\'%s\'',
-                str_replace('--', '-', $controllerSafe),
+                ' data-%s-%s-value="%s"',
+                $controller,
                 $key,
                 $this->encodeStimulusValue($value)
             );
