@@ -44,4 +44,5 @@ class SeoTrackingDataCollector extends DataCollector
     {
         return $this->data['route_params'] ?? [];
     }
+
 }

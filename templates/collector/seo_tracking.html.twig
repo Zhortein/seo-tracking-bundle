@@ -21,12 +21,44 @@
 {% block panel %}
     <h2>SEO Tracking</h2>
 
-    <h3>Route</h3>
-    <p><strong>{{ collector.route }}</strong></p>
+    <div class="sf-tabs">
+        <div class="tab">
+            <h3 class="tab-title">Request Info</h3>
+            <div class="tab-content">
+                <dl class="alt">
+                    <dt>Route</dt>
+                    <dd>{{ collector.route ?? '–' }}</dd>
 
-    <h3>Route Parameters</h3>
-    <pre>{{ collector.routeParams|default({})|yaml_dump }}</pre>
+                    <dt>Route Parameters</dt>
+                    <dd>
+                        {% if collector.routeParams is not empty %}
+                            <ul>
+                                {% for key, value in collector.routeParams %}
+                                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <em>None</em>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
 
-    <h3>UTM Parameters</h3>
-    <pre>{{ collector.utm|default({})|yaml_dump }}</pre>
+        <div class="tab">
+            <h3 class="tab-title">UTM Parameters</h3>
+            <div class="tab-content">
+                {% if collector.utm is not empty %}
+                    <ul>
+                        {% for key, value in collector.utm %}
+                            <li><strong>{{ key }}:</strong> {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><em>None</em></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
+
