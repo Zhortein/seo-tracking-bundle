@@ -51,6 +51,7 @@ class PageCallController extends AbstractController
 
         $ip = $request->getClientIp();
         $anonymizedIp = $ip ? preg_replace('/\.\d+$/', '.0', $ip) : null;
+        $screen = $data['screen'] ?? [];
 
         $hit = new PageCallHit();
         $hit
@@ -58,8 +59,10 @@ class PageCallController extends AbstractController
             ->setReferrer($request->headers->get('referer'))
             ->setUserAgent($request->headers->get('User-Agent'))
             ->setAnonymizedIp($anonymizedIp)
-            ->setCalledAt($nowImmutable);
-
+            ->setLanguage($data['language'] ?? null)
+            ->setCalledAt($nowImmutable)
+            ->setScreenWidth($screen['width'] ?? null)
+            ->setScreenHeight($screen['height'] ?? null);
         $em->persist($hit);
         $em->flush();
 
