@@ -2,21 +2,20 @@
 
 namespace Zhortein\SeoTrackingBundle\Twig;
 
-use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Request;
 use Twig\Attribute\AsTwigFunction;
 
-final class SeoTrackingExtension
+final readonly class SeoTrackingExtension
 {
-    public function __construct(private readonly RequestStack $requestStack)
+    public function __construct(private Request $request)
     {
     }
 
     #[AsTwigFunction(name: 'seo_tracking', isSafe: ['html'])]
     public function seoTracking(string $type = 'generic'): string
     {
-        $request = $this->requestStack->getCurrentRequest();
-        $route = $request?->attributes->get('_route', '');
-        $routeArgs = $request?->attributes->get('_route_params', []);
+        $route = $this->request?->attributes->get('_route', '');
+        $routeArgs = $this->request?->attributes->get('_route_params', []);
 
         $controller = 'zhortein--seo-tracking-bundle--tracking';
 
