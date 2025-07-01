@@ -52,7 +52,7 @@ class PageCallHit
     #[ORM\Column(options: ['default' => false])]
     private bool $bot = false;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $delaySincePreviousHit = null;
 
     #[ORM\Column]
