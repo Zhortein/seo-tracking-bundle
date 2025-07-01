@@ -49,10 +49,26 @@ class PageCallHit
     #[ORM\JoinColumn(name: 'parent_hit_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?self $parentHit = null;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $bot = false;
+
+    #[ORM\Column]
+    private ?int $delaySincePreviousHit = null;
+
+    #[ORM\Column]
+    private ?string $pageTitle = null;
+
+    #[ORM\Column]
+    private ?string $pageType = null;
+
     public function updateDuration(): void
     {
         if ($this->calledAt && $this->exitedAt) {
             $this->durationSeconds = $this->exitedAt->getTimestamp() - $this->calledAt->getTimestamp();
+        }
+
+        if (null !== $this->parentHit && $this->parentHit->getCalledAt() && $this->calledAt) {
+            $this->delaySincePreviousHit = $this->parentHit->getCalledAt()->getTimestamp() - $this->calledAt->getTimestamp();
         }
     }
 
@@ -192,4 +208,48 @@ class PageCallHit
 
         return $this;
     }
+
+    public function isBot(): bool
+    {
+        return $this->bot;
+    }
+
+    public function setBot(bool $bot): static
+    {
+        $this->bot = $bot;
+    }
+
+    public function getDelaySincePreviousHit(): ?int
+    {
+        return $this->delaySincePreviousHit;
+    }
+
+    public function setDelaySincePreviousHit(?int $delaySincePreviousHit): static
+    {
+        $this->delaySincePreviousHit = $delaySincePreviousHit;
+        return $this;
+    }
+
+    public function getPageTitle(): ?string
+    {
+        return $this->pageTitle;
+    }
+
+    public function setPageTitle(?string $pageTitle): static
+    {
+        $this->pageTitle = $pageTitle;
+        return $this;
+    }
+
+    public function getPageType(): ?string
+    {
+        return $this->pageType;
+    }
+
+    public function setPageType(?string $pageType): static
+    {
+        $this->pageType = $pageType;
+        return $this;
+    }
+
 }

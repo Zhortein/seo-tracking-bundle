@@ -10,9 +10,9 @@ use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 
 #[ORM\Entity(repositoryClass: PageCallRepository::class)]
 #[ORM\Table(name: 'seo_page_call')]
-#[ORM\Index(name: 'seo_page_call_idx', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content'])]
-#[ORM\UniqueConstraint(name: 'seo_page_call_uq', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content'])]
-#[UniqueEntity(fields: ['url', 'campaign', 'medium', 'source', 'term', 'content'])]
+#[ORM\Index(name: 'seo_page_call_idx', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
+#[ORM\UniqueConstraint(name: 'seo_page_call_uq', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
+#[UniqueEntity(fields: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
 class PageCall
 {
     #[ORM\Id]
@@ -58,6 +58,9 @@ class PageCall
      */
     #[ORM\OneToMany(targetEntity: PageCallHit::class, mappedBy: 'pageCall', orphanRemoval: true)]
     private Collection $hits;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $bot = false;
 
     public function __construct()
     {
@@ -229,5 +232,15 @@ class PageCall
         }
 
         return $this;
+    }
+
+    public function isBot(): bool
+    {
+        return $this->bot;
+    }
+
+    public function setBot(bool $bot): static
+    {
+        $this->bot = $bot;
     }
 }
