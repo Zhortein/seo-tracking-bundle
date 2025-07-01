@@ -1,0 +1,64 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% set utm = collector.utm %}
+    {% if utm is not empty %}
+        {% set icon %}
+            <span class="sf-toolbar-value">UTM</span>
+        {% endset %}
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Campaign:</b> {{ utm.campaign|default('–') }}
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Source:</b> {{ utm.source|default('–') }}
+            </div>
+        {% endset %}
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
+    {% endif %}
+{% endblock %}
+
+{% block panel %}
+    <h2>SEO Tracking</h2>
+
+    <div class="sf-tabs">
+        <div class="tab">
+            <h3 class="tab-title">Request Info</h3>
+            <div class="tab-content">
+                <dl class="alt">
+                    <dt>Route</dt>
+                    <dd>{{ collector.route ?? '–' }}</dd>
+
+                    <dt>Route Parameters</dt>
+                    <dd>
+                        {% if collector.routeParams is not empty %}
+                            <ul>
+                                {% for key, value in collector.routeParams %}
+                                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <em>None</em>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="tab">
+            <h3 class="tab-title">UTM Parameters</h3>
+            <div class="tab-content">
+                {% if collector.utm is not empty %}
+                    <ul>
+                        {% for key, value in collector.utm %}
+                            <li><strong>{{ key }}:</strong> {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><em>None</em></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
