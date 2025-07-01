@@ -55,10 +55,10 @@ class PageCallHit
     #[ORM\Column(nullable: true)]
     private ?int $delaySincePreviousHit = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $pageTitle = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $pageType = null;
 
     public function updateDuration(): void
