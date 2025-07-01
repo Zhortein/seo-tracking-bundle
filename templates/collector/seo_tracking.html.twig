@@ -1,0 +1,32 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block toolbar %}
+    {% set utm = collector.utm %}
+    {% if utm is not empty %}
+        {% set icon %}
+            <span class="sf-toolbar-value">UTM</span>
+        {% endset %}
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Campaign:</b> {{ utm.campaign|default('–') }}
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Source:</b> {{ utm.source|default('–') }}
+            </div>
+        {% endset %}
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: true }) }}
+    {% endif %}
+{% endblock %}
+
+{% block panel %}
+    <h2>SEO Tracking</h2>
+
+    <h3>Route</h3>
+    <p><strong>{{ collector.route }}</strong></p>
+
+    <h3>Route Parameters</h3>
+    <pre>{{ collector.routeParams|default({})|yaml }}</pre>
+
+    <h3>UTM Parameters</h3>
+    <pre>{{ collector.utm|default({})|yaml }}</pre>
+{% endblock %}

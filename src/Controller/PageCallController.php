@@ -7,15 +7,17 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Event\PageCallTrackedEvent;
 use Zhortein\SeoTrackingBundle\Repository\PageCallHitRepository;
 use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 
 class PageCallController extends AbstractController
 {
     #[Route('/page-call/track', name: 'page_call_track', methods: ['POST'])]
-    public function track(Request $request, PageCallRepository $pageCallRepository, EntityManagerInterface $em): JsonResponse
+    public function track(Request $request, PageCallRepository $pageCallRepository, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $nowImmutable = new \DateTimeImmutable();
@@ -65,6 +67,8 @@ class PageCallController extends AbstractController
             ->setScreenHeight($screen['height'] ?? null);
         $em->persist($hit);
         $em->flush();
+
+        $dispatcher->dispatch(new PageCallTrackedEvent($pageCall, $hit));
 
         return new JsonResponse(['hitId' => $hit->getId()]);
     }
