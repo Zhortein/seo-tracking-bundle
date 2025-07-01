@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.2.1] – 2025-07-01
+
+### ✨ Added
+- New Twig helper `seo_tracking(type)` to simplify usage:
+  Instead of writing Stimulus manually, you can now do:
+  ```twig
+  <div {{ seo_tracking('home') }}></div>
+  ```
+
+
 ## [1.2.0] – 2025-07-01
 
 > ⚠️ **This version requires a Doctrine migration** (new fields in `PageCall` and `PageCallHit`)

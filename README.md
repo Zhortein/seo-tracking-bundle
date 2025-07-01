@@ -45,6 +45,28 @@ We recommend placing the tracking call as early as possible in your page. The ``
 The `type` value is optional and allows you to define the nature of the page (e.g. `home`, `contact`, `form`, etc.).  
 This helps categorize traffic for SEO or UX analytics purposes.
 
+### 🔧 Simplified usage with Twig helper
+
+Instead of writing the `stimulus_controller(...)` call manually, you can use the built-in Twig function:
+
+```twig
+<div {{ seo_tracking('home') }}></div>
+```
+
+This will generate:
+
+```html
+  data-controller="zhortein--seo-tracking-bundle--tracking"
+  data-zhortein--seo-tracking-bundle--tracking-route-value="app_home"
+  data-zhortein--seo-tracking-bundle--tracking-route-args-value="[]"
+  data-zhortein--seo-tracking-bundle--tracking-type-value="home"
+```
+
+The function automatically injects the current Symfony route and route parameters.
+
+> ✅ You can safely place this <div> in your layout or any tracked template.
+> ⚠️ Do not use both `stimulus_controller(...)` and `seo_tracking(...)` at the same time.
+
 ## 🧠 What does this bundle track?
 
 The bundle automatically collects basic visit tracking data using Stimulus and <code>fetch()</code> calls, without setting cookies 
