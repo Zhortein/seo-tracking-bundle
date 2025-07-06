@@ -10,6 +10,8 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Filesystem\Filesystem;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class ZhorteinSeoTrackingExtension extends Extension implements PrependExtensionInterface
 {
@@ -20,6 +22,20 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+
+        $container->setParameter('zhortein_seo_tracking.page_call_class', $config['page_call_class']);
+        $container->setParameter('zhortein_seo_tracking.page_call_hit_class', $config['page_call_hit_class']);
+
+        if ($container->hasExtension('doctrine')) {
+            $container->prependExtensionConfig('doctrine', [
+                'orm' => [
+                    'resolve_target_entities' => [
+                        PageCallInterface::class => $config['page_call_class'],
+                        PageCallHitInterface::class => $config['page_call_hit_class'],
+                    ],
+                ],
+            ]);
+        }
 
         $this->handleBundleRoutes($container);
     }
