@@ -19,12 +19,12 @@
             <tag name="doctrine.event_subscriber" />
             <call method="addResolveTargetEntity">
                 <argument>Zhortein\SeoTrackingBundle\Entity\PageCallInterface</argument>
-                <argument>%seo-tracking.page_call_class%</argument>
+                <argument>%zhortein-seo-tracking.page_call_class%</argument>
                 <argument type="collection" />
             </call>
             <call method="addResolveTargetEntity">
                 <argument>Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface</argument>
-                <argument>%seo-tracking.page_call_hit_class%</argument>
+                <argument>%zhortein-seo-tracking.page_call_hit_class%</argument>
                 <argument type="collection" />
             </call>
         </service>
