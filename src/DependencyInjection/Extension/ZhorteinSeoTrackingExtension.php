@@ -12,6 +12,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class ZhorteinSeoTrackingExtension extends Extension implements PrependExtensionInterface
 {
@@ -48,9 +50,14 @@ YAML);
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        // ✅ Définir les paramètres AVANT le parsing des services.xml
-        $container->setParameter('zhortein_seo_tracking.page_call_class', $config['page_call_class'] ?? PageCall::class);
-        $container->setParameter('zhortein_seo_tracking.page_call_hit_class', $config['page_call_hit_class'] ?? PageCallHit::class);
+        $container->prependExtensionConfig('doctrine', [
+            'orm' => [
+                'resolve_target_entities' => [
+                    PageCallInterface::class    => $config['page_call_class'],
+                    PageCallHitInterface::class => $config['page_call_hit_class'],
+                ],
+            ],
+        ]);
 
         $this->configureAssetMapper($container);
     }
