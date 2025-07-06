@@ -50,6 +50,7 @@ YAML);
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        // Register dynamic targetEntities for Doctrine
         $container->prependExtensionConfig('doctrine', [
             'orm' => [
                 'resolve_target_entities' => [

@@ -178,3 +178,73 @@ Page tracking hits (`PageCallHit`), which are registered via **asynchronous Java
 
 > If you need to debug or analyze `PageCallHit` records, refer to your database directly or use the dedicated interface provided by the future companion tool (under development).
 
+## 🔁 Customizing Entities via `resolve_target_entities`
+
+By default, the bundle provides two mapped entities: `PageCall` and `PageCallHit`.
+
+However, you may want to extend these entities in your application to store additional information (e.g. link to a `User`, a `Session`, a `Tenant`, etc.).
+
+The bundle supports entity substitution via Symfony’s `resolve_target_entities` mechanism, with zero configuration required.
+
+### ✅ How it works
+
+Internally, the bundle defines two interfaces:
+
+* `Zhortein\SeoTrackingBundle\Entity\PageCallInterface`
+* `Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface`
+
+These interfaces are resolved to their corresponding classes by default:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    page_call_class: Zhortein\SeoTrackingBundle\Entity\PageCall
+    page_call_hit_class: Zhortein\SeoTrackingBundle\Entity\PageCallHit
+
+```
+
+You can override them by providing your own entity classes:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    page_call_class: App\Entity\MyCustomPageCall
+    page_call_hit_class: App\Entity\MyCustomPageCallHit
+
+```
+
+Your custom classes must implement the interfaces:
+
+```php
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
+
+#[ORM\Entity]
+class MyCustomPageCall implements PageCallInterface
+{
+    use \Zhortein\SeoTrackingBundle\Entity\Traits\PageCallTrait;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $user = null;
+
+    // your custom fields here
+}
+
+```
+You can use the provided `PageCallTrait` and `PageCallHitTrait` to avoid duplicating field declarations or missing fields.
+
+### ⚠️ Notes
+
+* You are not required to declare any resolve_target_entities block in your `doctrine.yaml`.
+* The bundle takes care of registering the mapping at runtime via the Symfony Dependency Injection system.
+* If you do override the entities, don’t forget to generate and apply a new migration:
+
+```bash
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+
+```
+
+> For technical details on how this is achieved, see the ZhorteinSeoTrackingExtension class and the use of Symfony's 
+> prependExtensionConfig() method.
+
+
