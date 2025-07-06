@@ -15,8 +15,8 @@
                  priority="0"/>
         </service>
 
-        <service id="doctrine.orm.resolve_target_entity_listener" class="Doctrine\ORM\Tools\ResolveTargetEntityListener">
-            <tag name="doctrine.event_subscriber" connection="default" />
+        <service id="doctrine.resolve_target_entity_listener" class="Doctrine\ORM\Tools\ResolveTargetEntityListener">
+            <tag name="doctrine.event_subscriber" />
             <call method="addResolveTargetEntity">
                 <argument>Zhortein\SeoTrackingBundle\Entity\PageCallInterface</argument>
                 <argument>%seo-tracking.page_call_class%</argument>
