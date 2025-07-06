@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Compiler\DoctrineMappingPass;
+use Zhortein\SeoTrackingBundle\DependencyInjection\Compiler\ResolveTargetEntitiesPass;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Extension\ZhorteinSeoTrackingExtension;
 
 class ZhorteinSeoTrackingBundle extends AbstractBundle
@@ -31,6 +32,7 @@ class ZhorteinSeoTrackingBundle extends AbstractBundle
     {
         parent::build($container);
         $container->addCompilerPass(new DoctrineMappingPass());
+        $container->addCompilerPass(new ResolveTargetEntitiesPass());
     }
 
     public function getContainerExtension(): ?ExtensionInterface
