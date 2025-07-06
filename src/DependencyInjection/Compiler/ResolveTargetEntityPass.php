@@ -21,13 +21,13 @@ class ResolveTargetEntityPass implements CompilerPassInterface
 
         $definition->addMethodCall('addResolveTargetEntity', [
             PageCallInterface::class,
-            $container->getParameter('zhortein-seo-tracking.page_call_class'),
+            $container->getParameter('zhortein_seo_tracking.page_call_class'),
             [],
         ]);
 
         $definition->addMethodCall('addResolveTargetEntity', [
             PageCallHitInterface::class,
-            $container->getParameter('zhortein-seo-tracking.page_call_hit_class'),
+            $container->getParameter('zhortein_seo_tracking.page_call_hit_class'),
             [],
         ]);
     }
