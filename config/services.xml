@@ -14,5 +14,20 @@
                  id="seo_tracking"
                  priority="0"/>
         </service>
+
+        <service id="doctrine.orm.resolve_target_entity_listener" class="Doctrine\ORM\Tools\ResolveTargetEntityListener">
+            <tag name="doctrine.event_subscriber" connection="default" />
+            <call method="addResolveTargetEntity">
+                <argument>Zhortein\SeoTrackingBundle\Entity\PageCallInterface</argument>
+                <argument>%seo-tracking.page_call_class%</argument>
+                <argument type="collection" />
+            </call>
+            <call method="addResolveTargetEntity">
+                <argument>Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface</argument>
+                <argument>%seo-tracking.page_call_hit_class%</argument>
+                <argument type="collection" />
+            </call>
+        </service>
+
     </services>
 </container>
