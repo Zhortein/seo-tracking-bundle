@@ -10,6 +10,8 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Filesystem\Filesystem;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class ZhorteinSeoTrackingExtension extends Extension implements PrependExtensionInterface
 {
@@ -41,6 +43,21 @@ YAML);
 
     public function prepend(ContainerBuilder $container): void
     {
+        // ✅ Charger la config utilisateur
+        $configs = $container->getExtensionConfig($this->getAlias());
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+
+        // Register dynamic targetEntities for Doctrine
+        $container->prependExtensionConfig('doctrine', [
+            'orm' => [
+                'resolve_target_entities' => [
+                    PageCallInterface::class => $config['page_call_class'],
+                    PageCallHitInterface::class => $config['page_call_hit_class'],
+                ],
+            ],
+        ]);
+
         $this->configureAssetMapper($container);
     }
 

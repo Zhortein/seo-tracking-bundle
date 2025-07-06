@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\DataCollector\DataCollector;
 
 class SeoTrackingDataCollector extends DataCollector
 {
-    public function collect(Request $request, Response $response, \Throwable $exception = null): void
+    public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
     {
         $utm = [
             'campaign' => $request->query->get('utm_campaign'),
@@ -44,5 +44,4 @@ class SeoTrackingDataCollector extends DataCollector
     {
         return $this->data['route_params'] ?? [];
     }
-
 }

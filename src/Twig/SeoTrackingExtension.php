@@ -46,12 +46,11 @@ final readonly class SeoTrackingExtension
             return htmlspecialchars(
                 is_array($value) || is_object($value)
                     ? json_encode($value, JSON_THROW_ON_ERROR)
-                    : (string)$value,
+                    : (string) $value,
                 ENT_QUOTES
             );
         } catch (\Throwable) {
             return '';
         }
     }
-
 }
