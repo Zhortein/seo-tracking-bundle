@@ -5,16 +5,21 @@ namespace Zhortein\SeoTrackingBundle\DependencyInjection\Extension;
 use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Filesystem\Filesystem;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
+use Zhortein\SeoTrackingBundle\DTO\SeoTrackingOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class ZhorteinSeoTrackingExtension extends Extension implements PrependExtensionInterface
 {
+    /**
+     * @throws \Exception
+     */
     public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../../../config'));
@@ -22,6 +27,16 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
 
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+
+        $def = new Definition(SeoTrackingOptions::class, [
+            $config['easylyse_api_page_call_endpoint'] ?? null,
+            $config['easylyse_api_page_exit_endpoint'] ?? null,
+            $config['easylyse_api_key'] ?? null,
+            $config['easylyse_enabled'] ?? false,
+            $config['easylyse_timeout'] ?? 300,
+        ]);
+        $def->setPublic(false);
+        $container->setDefinition(SeoTrackingOptions::class, $def);
 
         $this->handleBundleRoutes($container);
     }
