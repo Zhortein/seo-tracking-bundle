@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Event\PageCallExitEvent;
 use Zhortein\SeoTrackingBundle\Event\PageCallTrackedEvent;
 
 class PageCallController extends AbstractController
@@ -22,7 +23,7 @@ class PageCallController extends AbstractController
     #[Route('/page-call/track', name: 'page_call_track', methods: ['POST'])]
     public function track(Request $request, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         if (!is_array($data)) {
             return new JsonResponse(['error' => 'Invalid JSON payload'], 400);
@@ -111,9 +112,9 @@ class PageCallController extends AbstractController
     }
 
     #[Route('/page-call/exit', name: 'page_call_exit', methods: ['POST'])]
-    public function exit(Request $request, EntityManagerInterface $em): JsonResponse
+    public function exit(Request $request, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $hitId = $data['hitId'] ?? null;
 
         if (!$hitId) {
@@ -132,6 +133,8 @@ class PageCallController extends AbstractController
         $hit->updateDuration();
 
         $em->flush();
+
+        $dispatcher->dispatch(new PageCallExitEvent($hit->getPageCall(), $hit));
 
         return new JsonResponse(['status' => 'ok']);
     }
