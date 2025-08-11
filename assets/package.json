@@ -1,6 +1,6 @@
 {
   "name": "@zhortein/seo-tracking-bundle",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "symfony": {
     "controllers": {
       "tracking": {
