@@ -138,7 +138,7 @@ trait PageCallHitTrait
     public function setExitedAt(?\DateTimeImmutable $exitedAt): self
     {
         $this->exitedAt = $exitedAt;
-
+        $this->updateDuration();
         return $this;
     }
 
