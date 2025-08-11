@@ -87,7 +87,7 @@ trait PageCallHitTrait
         return $this->referrer;
     }
 
-    public function setReferrer(string $referrer): self
+    public function setReferrer(?string $referrer): self
     {
         $this->referrer = $referrer;
 
