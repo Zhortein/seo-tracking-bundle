@@ -17,6 +17,9 @@ final readonly class SeoTrackingExtension
         $request = $this->requestStack->getMainRequest();
         $route = $request?->attributes->get('_route', '');
         $routeArgs = $request?->attributes->get('_route_params', '{}');
+        if ($routeArgs === []) {
+            $routeArgs = '{}';
+        }
 
         $controller = 'zhortein--seo-tracking-bundle--tracking';
 
