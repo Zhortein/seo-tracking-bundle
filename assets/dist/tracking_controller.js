@@ -4,7 +4,7 @@ export default class extends Controller {
     static values = {
         type: { type: String, default: 'generic' },
         route: { type: String, default: null },
-        routeArgs: { type: Array, default: null },
+        routeArgs: { type: JSON|Array, default: null },
     }
 
     connect() {
