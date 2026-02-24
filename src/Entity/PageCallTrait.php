@@ -50,6 +50,9 @@ trait PageCallTrait
     #[ORM\Column(options: ['default' => false])]
     private bool $bot = false;
 
+    #[ORM\Column]
+    private ?int $idSite = 0;
+
     public function __construct()
     {
         $this->hits = new ArrayCollection();
@@ -225,6 +228,18 @@ trait PageCallTrait
     public function setBot(bool $bot): self
     {
         $this->bot = $bot;
+
+        return $this;
+    }
+
+    public function getIdSite(): ?int
+    {
+        return $this->idSite;
+    }
+
+    public function setIdSite(int $idSite): static
+    {
+        $this->idSite = $idSite;
 
         return $this;
     }
