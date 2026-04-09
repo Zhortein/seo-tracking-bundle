@@ -5,7 +5,7 @@
   "description": "This bundle is dedicated to Symfony applications and provide metrics gathering on page calls.",
   "homepage": "https://www.david-renard.fr",
   "license": "MIT",
-  "version": "1.2.9",
+  "version": "1.2.10",
   "authors": [
     {
       "name": "David Renard",
@@ -17,7 +17,7 @@
   "require": {
     "php": ">=8.3",
     "doctrine/dbal": "^3|^4",
-    "doctrine/doctrine-bundle": "^2.15",
+    "doctrine/doctrine-bundle": "^2.15|^3.2",
     "doctrine/orm": "^3.3|^4.0",
     "symfony/asset-mapper": "^7.3|^8.0",
     "symfony/framework-bundle": "^7.3|^8.0",
