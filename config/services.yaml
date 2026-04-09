@@ -1,0 +1,15 @@
+services:
+    # Configuration par défaut pour les services de ce fichier
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Enregistrement automatique de tes classes
+    Zhortein\SeoTrackingBundle\:
+        resource: '../src/'
+        exclude: '../src/{DependencyInjection,Entity,Kernel.php}'
+
+    # Configuration spécifique pour ton DataCollector
+    Zhortein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector:
+        tags:
+            - { name: 'data_collector', template: '@ZhorteinSeoTracking/collector/seo_tracking.html.twig', id: 'seo_tracking', priority: 0 }
