@@ -98,7 +98,7 @@ final readonly class StatisticsProvider implements StatisticsProviderInterface
 
     /**
      * @param array<string, array<string, array{value: string|int|float|bool, count: int}>> $values
-     * @param array<string, string|int|float|bool>                                         $dimensions
+     * @param array<string, string|int|float|bool>                                          $dimensions
      */
     private function incrementDimensions(array &$values, array $dimensions): void
     {
