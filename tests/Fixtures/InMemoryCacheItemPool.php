@@ -27,6 +27,11 @@ final class InMemoryCacheItemPool implements CacheItemPoolInterface
         return new InMemoryCacheItem($key, $this->values[$key] ?? null, array_key_exists($key, $this->values));
     }
 
+    /**
+     * @param list<string> $keys
+     *
+     * @return iterable<string, CacheItemInterface>
+     */
     public function getItems(array $keys = []): iterable
     {
         foreach ($keys as $key) {
@@ -53,6 +58,9 @@ final class InMemoryCacheItemPool implements CacheItemPoolInterface
         return true;
     }
 
+    /**
+     * @param list<string> $keys
+     */
     public function deleteItems(array $keys): bool
     {
         foreach ($keys as $key) {
