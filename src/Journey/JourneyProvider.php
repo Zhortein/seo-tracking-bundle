@@ -176,12 +176,12 @@ final readonly class JourneyProvider implements JourneyProviderInterface
     }
 
     /**
-     * @param list<string>                            $pathKeys
-     * @param array<string, true>                     $visiting
-     * @param array<string, JourneyHitObservation>    $observations
-     * @param array<string, list<string>>             $children
-     * @param list<JourneyPath>                       $paths
-     * @param array<string, true>                     $covered
+     * @param list<string>                         $pathKeys
+     * @param array<string, true>                  $visiting
+     * @param array<string, JourneyHitObservation> $observations
+     * @param array<string, list<string>>          $children
+     * @param list<JourneyPath>                    $paths
+     * @param array<string, true>                  $covered
      */
     private function walk(
         string $key,
@@ -255,10 +255,11 @@ final readonly class JourneyProvider implements JourneyProviderInterface
         $first = $observations[$keys[0]];
         /** @var list<JourneyStep> $steps */
         $steps = [];
-        $knownPredecessor = null !== $first->parentId && null !== $first->parentNode
-            && !isset($observations[$this->identifierKey($first->parentId)]);
-
-        if ($knownPredecessor) {
+        $knownPredecessor = false;
+        if (null !== $first->parentId
+            && null !== $first->parentNode
+            && !isset($observations[$this->identifierKey($first->parentId)])) {
+            $knownPredecessor = true;
             $steps[] = new JourneyStep(
                 $first->parentId,
                 $first->parentNode,
