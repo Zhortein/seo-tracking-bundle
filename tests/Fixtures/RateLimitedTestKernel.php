@@ -6,6 +6,7 @@ namespace Zhortein\SeoTrackingBundle\Tests\Fixtures;
 
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReporterInterface;
 
 final class RateLimitedTestKernel extends TestKernel
 {
@@ -33,5 +34,10 @@ final class RateLimitedTestKernel extends TestKernel
                 'closure_limiter' => 'limiter.seo_tracking_closure',
             ],
         ]);
+        $container->register(CollectingInvalidTrackingEventReporter::class)->setPublic(true);
+        $container->setAlias(
+            InvalidTrackingEventReporterInterface::class,
+            CollectingInvalidTrackingEventReporter::class,
+        );
     }
 }

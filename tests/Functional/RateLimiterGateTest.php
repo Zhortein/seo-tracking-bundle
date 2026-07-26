@@ -14,7 +14,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Controller\PageCallController;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Tests\Fixtures\CollectingInvalidTrackingEventReporter;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\RateLimitedTestKernel;
+use Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReason;
+use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingEndpoint;
 
 final class RateLimiterGateTest extends TestCase
 {
@@ -71,6 +74,13 @@ final class RateLimiterGateTest extends TestCase
 
             self::assertSame(200, $closed->getStatusCode());
             self::assertSame(429, $closureRejected->getStatusCode());
+            $reporter = $container->get(CollectingInvalidTrackingEventReporter::class);
+            self::assertInstanceOf(CollectingInvalidTrackingEventReporter::class, $reporter);
+            self::assertCount(2, $reporter->events);
+            self::assertSame(InvalidTrackingEventReason::RATE_LIMITED, $reporter->events[0]->reason);
+            self::assertSame(TrackingEndpoint::CREATION, $reporter->events[0]->endpoint);
+            self::assertSame(InvalidTrackingEventReason::RATE_LIMITED, $reporter->events[1]->reason);
+            self::assertSame(TrackingEndpoint::CLOSURE, $reporter->events[1]->endpoint);
         } finally {
             $kernel->shutdown();
         }
