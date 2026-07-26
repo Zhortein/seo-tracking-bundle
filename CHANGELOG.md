@@ -8,12 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+---
+
+## [1.4.0] – 2026-07-26
+
 ### Added
 
 - A dry-run-first command for historical grouping-key inventory and backfill.
 - Explicit duplicate consolidation for the default entities, with a replaceable merger contract for custom entities.
 - An opt-in retention policy and dry-run-first purge command with bounded batches and aggregate repair.
 - A replaceable consent checker plus configurable frontend grant/revoke events, with immediate tracking preserved by default.
+
+### Changed
+
+- The Stimulus controller now delays collection while consent is pending, closes the current hit once on revocation and starts a fresh flow after a later grant.
+- The tracking endpoint enforces the configured consent checker while the exit endpoint remains available to close an existing hit.
+- Symfony Console is now an explicit runtime dependency for the bundle commands.
+
+### Migration
+
+- No Doctrine schema migration is required. See [`docs/upgrade-1.4.md`](docs/upgrade-1.4.md) for the opt-in operational steps.
 
 ---
 

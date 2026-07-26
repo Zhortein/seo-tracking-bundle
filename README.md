@@ -360,12 +360,15 @@ php bin/console zhortein:seo-tracking:purge
 
 The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
 
-## Upgrading to 1.3
+## Upgrading to 1.4
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.3
+composer require zhortein/seo-tracking-bundle:^1.4
+php bin/console asset-map:compile
 ```
 
-The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout, exact checks and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
+No Doctrine schema migration is required from 1.3. The new data-lifecycle operations are opt-in and tracking remains immediately enabled unless the application replaces the consent checker. Read the [1.4 upgrade procedure](docs/upgrade-1.4.md) before enabling backfill, retention or consent gating.
+
+Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).

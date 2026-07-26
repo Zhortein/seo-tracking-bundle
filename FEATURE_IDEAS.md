@@ -1,18 +1,10 @@
 # Roadmap for SeoTrackingBundle
 
-This file lists improvements deliberately left outside the 1.3 release. Items are exploratory unless they are attached to a GitHub milestone.
+This file lists improvements deliberately left outside the 1.4 release. Items are exploratory unless they are attached to a GitHub milestone.
 
 The bundle must remain generic: application-specific behavior belongs in configuration, replaceable services, events or overrideable templates.
 
 ---
-
-## Data lifecycle
-
-### In progress for 1.4
-
-- Dry-run-first historical grouping consolidation and `grouping_key` backfill, with an explicit custom-entity merge policy before an application makes the column non-null.
-- Opt-in hit retention with preview, bounded purge batches and aggregate repair.
-- Replaceable server-side consent decisions and generic frontend grant/revoke events without coupling to a consent manager.
 
 ## Tracking
 
@@ -33,6 +25,12 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 - Expand database CI when a platform can be supported continuously.
 - Review Symfony 7.3 support separately once its ecosystem constraints no longer permit a secure dependency set.
+
+## Delivered in 1.4
+
+- Dry-run-first historical grouping consolidation and `grouping_key` backfill, with an explicit custom-entity merge policy.
+- Opt-in hit retention with preview, bounded purge batches and aggregate repair.
+- Replaceable server-side consent decisions and generic frontend grant/revoke events without coupling to a consent manager.
 
 ## Delivered in 1.3
 

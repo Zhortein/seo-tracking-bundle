@@ -43,6 +43,7 @@ jobs:
           test -f "$manifest"
           test -f "$notes"
           test "$(jq -r '.version' "$manifest")" = "$version"
+          jq -e '.milestone_description | type == "string" and length > 0' "$manifest" >/dev/null
           jq -e '.issues | type == "array" and length > 0 and all(type == "number")' "$manifest" >/dev/null
 
           main_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')"
@@ -73,6 +74,7 @@ jobs:
         run: |
           set -euo pipefail
 
+          milestone_description="$(jq -r '.milestone_description' "$MANIFEST")"
           milestone="$(
             gh api --paginate "repos/${GITHUB_REPOSITORY}/milestones?state=all&per_page=100" \
               --jq ".[] | select(.title == \"${VERSION}\") | .number" |
@@ -83,7 +85,7 @@ jobs:
             milestone="$(
               gh api --method POST "repos/${GITHUB_REPOSITORY}/milestones" \
                 -f title="$VERSION" \
-                -f description="Tracking correctness, extensibility, statistics API and Twig rendering." \
+                -f description="$milestone_description" \
                 --jq '.number'
             )"
           fi
