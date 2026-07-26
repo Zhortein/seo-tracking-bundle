@@ -11,7 +11,10 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporterInterface;
 use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
+use Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowserInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationPageRequest;
 use Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
 
@@ -28,8 +31,12 @@ final class StatisticsProviderTest extends TestCase
             self::assertInstanceOf(ContainerInterface::class, $container);
             $entityManager = $container->get(EntityManagerInterface::class);
             $provider = $container->get(StatisticsProviderInterface::class);
+            $browser = $container->get(ObservationBrowserInterface::class);
+            $exporter = $container->get(CsvStatisticsExporterInterface::class);
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(StatisticsProviderInterface::class, $provider);
+            self::assertInstanceOf(ObservationBrowserInterface::class, $browser);
+            self::assertInstanceOf(CsvStatisticsExporterInterface::class, $exporter);
 
             (new SchemaTool($entityManager))->createSchema([
                 $entityManager->getClassMetadata(PageCall::class),
@@ -81,6 +88,35 @@ final class StatisticsProviderTest extends TestCase
             self::assertSame(['plan', 'tenant', 'version'], array_column($report->dimensions, 'name'));
             self::assertSame('pro', $report->dimensions[0]->values[0]->value);
             self::assertSame('integer', $report->dimensions[2]->values[0]->type);
+
+            $page = $browser->page(
+                new StatisticsFilter(
+                    from: new \DateTimeImmutable('2026-07-10 00:00:00 UTC'),
+                    to: new \DateTimeImmutable('2026-07-10 23:59:59 UTC'),
+                    bot: false,
+                    pageType: 'article',
+                    dimensions: ['tenant' => 'acme'],
+                ),
+                new ObservationPageRequest(0, 1),
+            );
+
+            self::assertSame(['https://example.test/human-article'], array_column($page->items, 'pageUrl'));
+            self::assertTrue($page->hasMore);
+            self::assertSame(1, $page->nextOffset());
+
+            $csv = implode('', iterator_to_array($exporter->export(new StatisticsFilter(
+                from: new \DateTimeImmutable('2026-07-10 00:00:00 UTC'),
+                to: new \DateTimeImmutable('2026-07-10 23:59:59 UTC'),
+                bot: false,
+                pageType: 'article',
+                dimensions: ['tenant' => 'acme', 'version' => 1],
+            )), false));
+
+            self::assertStringContainsString('"https://example.test/human-article"', $csv);
+            self::assertStringContainsString('"{""plan"":""pro"",""tenant"":""acme"",""version"":1}"', $csv);
+            self::assertStringNotContainsString('human-article-other-tenant', $csv);
+            self::assertStringNotContainsString('robot-home', $csv);
+            self::assertSame(2, substr_count($csv, "\n"));
         } finally {
             $kernel->shutdown();
         }

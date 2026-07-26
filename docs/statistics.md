@@ -118,6 +118,17 @@ zhortein_seo_tracking:
 
 The theme only emits Bootstrap class names; it does not install Bootstrap or any JavaScript dependency.
 
+Use the framework-neutral semantic HTML theme:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    statistics:
+        theme: html5
+```
+
+The HTML5 theme uses native progress elements and complete tables without loading CSS or JavaScript. Both supplied themes translate their labels through the `seo_tracking` domain and include English and French catalogs.
+
 Use an application template:
 
 ```yaml
@@ -142,7 +153,13 @@ The bundled template can also be overridden at:
 templates/bundles/ZhorteinSeoTrackingBundle/statistics/bootstrap5/report.html.twig
 ```
 
-It defines `summary`, `trend`, `rankings` and `dimensions` blocks for targeted overrides.
+The HTML5 template can be overridden at:
+
+```text
+templates/bundles/ZhorteinSeoTrackingBundle/statistics/html5/report.html.twig
+```
+
+Both templates define `summary`, `trend`, `rankings` and `dimensions` blocks for targeted overrides. Read [accessible statistics presentation](statistics-presentation.md) for visual semantics, translations, zero-count behavior and override guidance.
 
 ## Custom entities and data sources
 
@@ -159,3 +176,17 @@ services:
 Return `HitObservation` objects after applying the supplied `StatisticsFilter`, including all exact dimension matches. Populate the observation's optional `dimensions` argument to expose dimension rankings. The standard provider, DTOs and Twig theme remain reusable.
 
 The default implementation streams Doctrine scalar rows and aggregates them in PHP for database portability. For very large datasets, replace the data source with database-specific pre-aggregation while retaining the public report API.
+
+## Pagination and cache
+
+For administrative hit listings, `ObservationBrowserInterface` exposes bounded offset pages over the same filtered observation stream. It stops after the requested page plus one look-ahead item and returns explicit `hasMore` and `nextOffset()` information.
+
+Aggregate report caching is disabled by default. Applications can configure a PSR-6 pool and positive TTL; cache keys cover every filter field, scalar dimension type, timezone and ranking limit. Optional cache failures are fail-open.
+
+Read [statistics pagination and cache](statistics-performance.md) for configuration, performance boundaries, privacy considerations and replacement contracts.
+
+## Streaming exports
+
+`CsvStatisticsExporterInterface` produces a lazy UTF-8 CSV stream using the same complete `StatisticsFilter`. The stable schema includes the observation timestamp, bot/closure state, duration, page and UTM context, type/language and deterministic typed dimensions. It excludes raw IP, User-Agent and identity fields.
+
+The bundle creates no public export route. See [streaming statistics exports](statistics-export.md) for a secured Symfony `StreamedResponse`, CSV dialect options, spreadsheet-formula protection and external adapter guidance.

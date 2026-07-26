@@ -1,14 +1,37 @@
 {% macro ranking(title, values) %}
+    {% set maximum = 1 %}
+    {% for value in values %}
+        {% if value.count > maximum %}
+            {% set maximum = value.count %}
+        {% endif %}
+    {% endfor %}
+
     <div class="card h-100">
         <div class="card-header">{{ title }}</div>
         <div class="list-group list-group-flush">
             {% for value in values %}
-                <div class="list-group-item d-flex justify-content-between gap-3">
-                    <span class="text-break">{{ value.label }}</span>
-                    <span class="badge text-bg-secondary rounded-pill">{{ value.count }}</span>
+                {% set bounded_count = value.count < 0 ? 0 : (value.count > maximum ? maximum : value.count) %}
+                {% set percentage = bounded_count >= maximum ? 100 : ((bounded_count / maximum) * 100)|round %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between gap-3 mb-1">
+                        <span class="text-break">{{ value.label }}</span>
+                        <span class="badge text-bg-secondary rounded-pill">{{ value.count }}</span>
+                    </div>
+                    <div
+                        class="progress"
+                        role="progressbar"
+                        aria-label="{{ title }} — {{ value.label }}"
+                        aria-valuenow="{{ bounded_count }}"
+                        aria-valuemin="0"
+                        aria-valuemax="{{ maximum }}"
+                    >
+                        <div class="progress-bar" style="width: {{ percentage }}%"></div>
+                    </div>
                 </div>
             {% else %}
-                <div class="list-group-item text-body-secondary">No data</div>
+                <div class="list-group-item text-body-secondary">
+                    {{ 'statistics.no_data'|trans({}, 'seo_tracking') }}
+                </div>
             {% endfor %}
         </div>
     </div>
@@ -16,13 +39,19 @@
 
 {% import _self as statistics %}
 
-<section class="seo-tracking-statistics" data-seo-tracking-statistics>
+<section
+    class="seo-tracking-statistics"
+    data-seo-tracking-statistics
+    aria-label="{{ 'statistics.title'|trans({}, 'seo_tracking') }}"
+>
     {% block summary %}
         <div class="row g-3 mb-4">
             <div class="col-6 col-lg">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-body-secondary small">Page calls</div>
+                        <div class="text-body-secondary small">
+                            {{ 'statistics.page_calls'|trans({}, 'seo_tracking') }}
+                        </div>
                         <div class="fs-3 fw-semibold">{{ report.summary.pageCalls }}</div>
                     </div>
                 </div>
@@ -30,7 +59,9 @@
             <div class="col-6 col-lg">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-body-secondary small">Human hits</div>
+                        <div class="text-body-secondary small">
+                            {{ 'statistics.human_hits'|trans({}, 'seo_tracking') }}
+                        </div>
                         <div class="fs-3 fw-semibold">{{ report.summary.humanHits }}</div>
                     </div>
                 </div>
@@ -38,7 +69,9 @@
             <div class="col-6 col-lg">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-body-secondary small">Robot hits</div>
+                        <div class="text-body-secondary small">
+                            {{ 'statistics.robot_hits'|trans({}, 'seo_tracking') }}
+                        </div>
                         <div class="fs-3 fw-semibold">{{ report.summary.robotHits }}</div>
                     </div>
                 </div>
@@ -46,20 +79,34 @@
             <div class="col-6 col-lg">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-body-secondary small">Average duration</div>
-                        <div class="fs-3 fw-semibold">
-                            {{ report.summary.averageDurationSeconds is null ? '—' : report.summary.averageDurationSeconds|number_format(1) ~ ' s' }}
+                        <div class="text-body-secondary small">
+                            {{ 'statistics.average_duration'|trans({}, 'seo_tracking') }}
                         </div>
-                        <div class="small text-body-secondary">{{ report.summary.durationSamples }} closed hits</div>
+                        <div class="fs-3 fw-semibold">
+                            {% if report.summary.averageDurationSeconds is null %}
+                                {{ 'statistics.duration_unavailable'|trans({}, 'seo_tracking') }}
+                            {% else %}
+                                {{ 'statistics.duration_seconds'|trans({'%duration%': report.summary.averageDurationSeconds|number_format(1)}, 'seo_tracking') }}
+                            {% endif %}
+                        </div>
+                        <div class="small text-body-secondary">
+                            {{ 'statistics.duration_samples'|trans({'%count%': report.summary.durationSamples}, 'seo_tracking') }}
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-6 col-lg">
                 <div class="card h-100">
                     <div class="card-body">
-                        <div class="text-body-secondary small">Median duration</div>
+                        <div class="text-body-secondary small">
+                            {{ 'statistics.median_duration'|trans({}, 'seo_tracking') }}
+                        </div>
                         <div class="fs-3 fw-semibold">
-                            {{ report.summary.medianDurationSeconds is null ? '—' : report.summary.medianDurationSeconds|number_format(1) ~ ' s' }}
+                            {% if report.summary.medianDurationSeconds is null %}
+                                {{ 'statistics.duration_unavailable'|trans({}, 'seo_tracking') }}
+                            {% else %}
+                                {{ 'statistics.duration_seconds'|trans({'%duration%': report.summary.medianDurationSeconds|number_format(1)}, 'seo_tracking') }}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -68,16 +115,65 @@
     {% endblock %}
 
     {% block trend %}
+        {% set maximum = 1 %}
+        {% for point in report.trend %}
+            {% if point.hits > maximum %}
+                {% set maximum = point.hits %}
+            {% endif %}
+        {% endfor %}
+
         <div class="card mb-4">
-            <div class="card-header">Evolution</div>
+            <div class="card-header">{{ 'statistics.evolution'|trans({}, 'seo_tracking') }}</div>
+            <figure
+                class="card-body border-bottom mb-0"
+                aria-label="{{ 'statistics.evolution_chart'|trans({}, 'seo_tracking') }}"
+            >
+                <figcaption class="visually-hidden">
+                    {{ 'statistics.evolution_chart'|trans({}, 'seo_tracking') }}
+                </figcaption>
+                <div class="d-flex align-items-end gap-2" style="min-height: 8rem">
+                    {% for point in report.trend %}
+                        {% set bounded_hits = point.hits < 0 ? 0 : (point.hits > maximum ? maximum : point.hits) %}
+                        {% set percentage = bounded_hits >= maximum ? 100 : ((bounded_hits / maximum) * 100)|round %}
+                        <div class="d-flex flex-column justify-content-end align-items-center flex-fill h-100">
+                            <span class="small">{{ point.hits }}</span>
+                            <div
+                                class="bg-primary w-100"
+                                style="height: {{ percentage }}%; min-height: {{ bounded_hits > 0 ? 2 : 0 }}px"
+                                role="img"
+                                aria-label="{{ point.date|date('Y-m-d', report.filter.timezone.name) }} — {{ 'statistics.hit_count'|trans({'%count%': point.hits}, 'seo_tracking') }}"
+                            ></div>
+                            <time
+                                class="small text-body-secondary"
+                                datetime="{{ point.date|date('Y-m-d', report.filter.timezone.name) }}"
+                            >
+                                {{ point.date|date('m-d', report.filter.timezone.name) }}
+                            </time>
+                        </div>
+                    {% else %}
+                        <div class="text-body-secondary">
+                            {{ 'statistics.no_data'|trans({}, 'seo_tracking') }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </figure>
             <div class="table-responsive">
                 <table class="table table-sm table-striped align-middle mb-0">
+                    <caption class="visually-hidden">
+                        {{ 'statistics.evolution_data'|trans({}, 'seo_tracking') }}
+                    </caption>
                     <thead>
                         <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col" class="text-end">Page calls</th>
-                            <th scope="col" class="text-end">Humans</th>
-                            <th scope="col" class="text-end">Robots</th>
+                            <th scope="col">{{ 'statistics.date'|trans({}, 'seo_tracking') }}</th>
+                            <th scope="col" class="text-end">
+                                {{ 'statistics.page_calls'|trans({}, 'seo_tracking') }}
+                            </th>
+                            <th scope="col" class="text-end">
+                                {{ 'statistics.humans'|trans({}, 'seo_tracking') }}
+                            </th>
+                            <th scope="col" class="text-end">
+                                {{ 'statistics.robots'|trans({}, 'seo_tracking') }}
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -89,7 +185,11 @@
                                 <td class="text-end">{{ point.robotHits }}</td>
                             </tr>
                         {% else %}
-                            <tr><td colspan="4" class="text-center text-body-secondary">No data</td></tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-body-secondary">
+                                    {{ 'statistics.no_data'|trans({}, 'seo_tracking') }}
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -99,23 +199,40 @@
 
     {% block rankings %}
         <div class="row g-3 mb-4">
-            <div class="col-12 col-lg-6">{{ statistics.ranking('Top pages', report.topPages) }}</div>
-            <div class="col-12 col-lg-6">{{ statistics.ranking('Routes', report.routes) }}</div>
-            <div class="col-12 col-md-4">{{ statistics.ranking('UTM sources', report.sources) }}</div>
-            <div class="col-12 col-md-4">{{ statistics.ranking('UTM campaigns', report.campaigns) }}</div>
-            <div class="col-12 col-md-4">{{ statistics.ranking('UTM media', report.mediums) }}</div>
-            <div class="col-12 col-md-4">{{ statistics.ranking('Page types', report.pageTypes) }}</div>
-            <div class="col-12 col-md-4">{{ statistics.ranking('Languages', report.languages) }}</div>
+            <div class="col-12 col-lg-6">
+                {{ statistics.ranking('statistics.top_pages'|trans({}, 'seo_tracking'), report.topPages) }}
+            </div>
+            <div class="col-12 col-lg-6">
+                {{ statistics.ranking('statistics.routes'|trans({}, 'seo_tracking'), report.routes) }}
+            </div>
+            <div class="col-12 col-md-4">
+                {{ statistics.ranking('statistics.utm_sources'|trans({}, 'seo_tracking'), report.sources) }}
+            </div>
+            <div class="col-12 col-md-4">
+                {{ statistics.ranking('statistics.utm_campaigns'|trans({}, 'seo_tracking'), report.campaigns) }}
+            </div>
+            <div class="col-12 col-md-4">
+                {{ statistics.ranking('statistics.utm_media'|trans({}, 'seo_tracking'), report.mediums) }}
+            </div>
+            <div class="col-12 col-md-4">
+                {{ statistics.ranking('statistics.page_types'|trans({}, 'seo_tracking'), report.pageTypes) }}
+            </div>
+            <div class="col-12 col-md-4">
+                {{ statistics.ranking('statistics.languages'|trans({}, 'seo_tracking'), report.languages) }}
+            </div>
         </div>
     {% endblock %}
 
     {% block dimensions %}
         {% if report.dimensions is not empty %}
-            <h2 class="h5 mb-3">Custom dimensions</h2>
+            <h2 class="h5 mb-3">{{ 'statistics.custom_dimensions'|trans({}, 'seo_tracking') }}</h2>
             <div class="row g-3">
                 {% for dimension in report.dimensions %}
                     <div class="col-12 col-md-6 col-xl-4">
-                        {{ statistics.ranking('Dimension: ' ~ dimension.name, dimension.values) }}
+                        {{ statistics.ranking(
+                            'statistics.dimension'|trans({'%name%': dimension.name}, 'seo_tracking'),
+                            dimension.values,
+                        ) }}
                     </div>
                 {% endfor %}
             </div>

@@ -13,6 +13,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Cache\StatisticsReportCacheInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporterInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowserInterface;
 use Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface;
 use Zhortein\SeoTrackingBundle\ZhorteinSeoTrackingBundle;
 
@@ -57,6 +60,8 @@ class TestKernel extends Kernel
             'secret' => 'test',
             'test' => true,
             'router' => ['utf8' => true],
+            'default_locale' => 'en',
+            'translator' => ['fallbacks' => ['en']],
         ]);
         $container->loadFromExtension('doctrine', [
             'dbal' => $dbal,
@@ -68,7 +73,10 @@ class TestKernel extends Kernel
             'strict_variables' => true,
         ]);
         $container->setAlias('test.journey_provider', JourneyProviderInterface::class)->setPublic(true);
+        $container->setAlias('test.csv_statistics_exporter', CsvStatisticsExporterInterface::class)->setPublic(true);
+        $container->setAlias('test.observation_browser', ObservationBrowserInterface::class)->setPublic(true);
         $container->setAlias('test.statistics_provider', StatisticsProviderInterface::class)->setPublic(true);
+        $container->setAlias('test.statistics_report_cache', StatisticsReportCacheInterface::class)->setPublic(true);
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void

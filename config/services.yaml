@@ -10,6 +10,7 @@ services:
         exclude:
             - '../src/{DependencyInjection,Entity,Kernel.php}'
             - '../src/Tracking/RateLimit/SymfonyTrackingRateLimiter.php'
+            - '../src/Statistics/Cache/Psr6StatisticsReportCache.php'
 
     Zhortein\SeoTrackingBundle\Controller\PageCallController:
         arguments:
@@ -98,8 +99,21 @@ services:
     Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface:
         alias: Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource
 
+    Zhortein\SeoTrackingBundle\Statistics\Cache\StatisticsReportCacheInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\Cache\NullStatisticsReportCache
+
+    Zhortein\SeoTrackingBundle\Statistics\StatisticsProvider:
+        arguments:
+            $cacheTtl: '%zhortein_seo_tracking.statistics.cache_ttl%'
+
     Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface:
         alias: Zhortein\SeoTrackingBundle\Statistics\StatisticsProvider
+
+    Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowserInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowser
+
+    Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporterInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporter
 
     Zhortein\SeoTrackingBundle\Journey\DataSource\DoctrineJourneyDataSource:
         arguments:

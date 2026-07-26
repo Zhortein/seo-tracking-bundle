@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zhortein\SeoTrackingBundle\Tests\Unit\DependencyInjection;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -32,6 +33,10 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($statistics);
         self::assertSame('bootstrap5', $statistics['theme']);
         self::assertNull($statistics['template']);
+        $statisticsCache = $statistics['cache'];
+        self::assertIsArray($statisticsCache);
+        self::assertNull($statisticsCache['pool']);
+        self::assertSame(0, $statisticsCache['ttl']);
         $retention = $config['retention'];
         self::assertIsArray($retention);
         self::assertNull($retention['days']);
@@ -92,6 +97,87 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($rateLimiter);
         self::assertSame('limiter.seo_tracking_creation', $rateLimiter['creation_limiter']);
         self::assertSame('limiter.seo_tracking_closure', $rateLimiter['closure_limiter']);
+    }
+
+    public function testStatisticsCacheCanBeConfiguredExplicitly(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => [
+                'cache' => [
+                    'pool' => 'cache.seo_tracking_statistics',
+                    'ttl' => 120,
+                ],
+            ],
+        ]]);
+
+        $statistics = $config['statistics'];
+        self::assertIsArray($statistics);
+        $cache = $statistics['cache'];
+        self::assertIsArray($cache);
+        self::assertSame('cache.seo_tracking_statistics', $cache['pool']);
+        self::assertSame(120, $cache['ttl']);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function statisticsThemes(): iterable
+    {
+        yield 'Bootstrap 5' => ['bootstrap5'];
+        yield 'framework-neutral HTML5' => ['html5'];
+        yield 'no bundled theme' => ['none'];
+    }
+
+    #[DataProvider('statisticsThemes')]
+    public function testEveryStatisticsThemeCanBeSelected(string $theme): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => ['theme' => $theme],
+        ]]);
+
+        $statistics = $config['statistics'];
+        self::assertIsArray($statistics);
+        self::assertSame($theme, $statistics['theme']);
+    }
+
+    public function testStatisticsCachePoolCannotBeEmpty(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => [
+                'cache' => [
+                    'pool' => ' ',
+                    'ttl' => 60,
+                ],
+            ],
+        ]]);
+    }
+
+    public function testStatisticsCachePoolRequiresAPositiveTtl(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => [
+                'cache' => [
+                    'pool' => 'cache.seo_tracking_statistics',
+                ],
+            ],
+        ]]);
+    }
+
+    public function testStatisticsCacheTtlRequiresAPool(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => [
+                'cache' => [
+                    'ttl' => 60,
+                ],
+            ],
+        ]]);
     }
 
     public function testRateLimiterServiceIdsCannotBeEmpty(): void
