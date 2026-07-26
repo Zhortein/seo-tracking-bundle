@@ -29,17 +29,21 @@
     "symfony/yaml": "^7.3|^8.0"
   },
   "require-dev": {
+    "friendsofphp/php-cs-fixer": "^v3.75.0",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-doctrine": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/php-code-coverage": "^12.3.1",
     "phpunit/phpunit": "^12.2.5",
-    "friendsofphp/php-cs-fixer": "^v3.75.0",
-    "symfony/phpunit-bridge": "^7.3|^8.0",
     "roave/security-advisories": "dev-latest",
+    "symfony/flex": "^2.7",
+    "symfony/phpunit-bridge": "^7.3|^8.0",
     "symfony/test-pack": "^1.0"
   },
   "config": {
+    "allow-plugins": {
+      "symfony/flex": true
+    },
     "sort-packages": true
   },
   "autoload": {
