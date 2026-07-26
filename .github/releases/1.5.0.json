@@ -1,0 +1,5 @@
+{
+  "version": "1.5.0",
+  "milestone_description": "Endpoint rate limiting, explainable bot classification and privacy-safe invalid-event observability.",
+  "issues": [43, 44, 45, 46]
+}
