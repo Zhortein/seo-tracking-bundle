@@ -42,7 +42,6 @@ final readonly class DoctrineStatisticsDataSource implements StatisticsDataSourc
                 'hit.bot AS bot',
                 'hit.pageType AS pageType',
                 'hit.language AS language',
-                'hit.dimensions AS dimensions',
                 'pageCall.url AS pageUrl',
                 'pageCall.route AS route',
                 'pageCall.source AS source',
@@ -52,6 +51,10 @@ final readonly class DoctrineStatisticsDataSource implements StatisticsDataSourc
             ->from($this->pageCallHitClass, 'hit')
             ->innerJoin('hit.pageCall', 'pageCall')
             ->orderBy('hit.calledAt', 'ASC');
+
+        if ($manager->getClassMetadata($this->pageCallHitClass)->hasField('dimensions')) {
+            $queryBuilder->addSelect('hit.dimensions AS dimensions');
+        }
 
         if (null !== $filter->from) {
             $queryBuilder
