@@ -167,3 +167,9 @@ For administrative hit listings, `ObservationBrowserInterface` exposes bounded o
 Aggregate report caching is disabled by default. Applications can configure a PSR-6 pool and positive TTL; cache keys cover every filter field, scalar dimension type, timezone and ranking limit. Optional cache failures are fail-open.
 
 Read [statistics pagination and cache](statistics-performance.md) for configuration, performance boundaries, privacy considerations and replacement contracts.
+
+## Streaming exports
+
+`CsvStatisticsExporterInterface` produces a lazy UTF-8 CSV stream using the same complete `StatisticsFilter`. The stable schema includes the observation timestamp, bot/closure state, duration, page and UTM context, type/language and deterministic typed dimensions. It excludes raw IP, User-Agent and identity fields.
+
+The bundle creates no public export route. See [streaming statistics exports](statistics-export.md) for a secured Symfony `StreamedResponse`, CSV dialect options, spreadsheet-formula protection and external adapter guidance.
