@@ -46,7 +46,7 @@ version. Schema changes are intentionally not repeated in later guides.
 
 | Version | Upgrade guide | Release notes |
 |---|---|---|
-| 1.7 | [Upgrade to 1.7](upgrade-1.7.md) | [1.7.0](releases/1.7.0.md) |
+| 1.7 | [Upgrade to 1.7](upgrade-1.7.md) | [1.7.1](releases/1.7.1.md), [1.7.0](releases/1.7.0.md) |
 | 1.6 | [Upgrade to 1.6](upgrade-1.6.md) | [1.6.0](releases/1.6.0.md) |
 | 1.5 | [Upgrade to 1.5](upgrade-1.5.md) | [1.5.0](releases/1.5.0.md) |
 | 1.4 | [Upgrade to 1.4](upgrade-1.4.md) | [1.4.0](releases/1.4.0.md) |
