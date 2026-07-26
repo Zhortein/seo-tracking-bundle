@@ -50,7 +50,7 @@ final class InvalidTrackingEventReportingTest extends TestCase
                 $dispatcher,
             );
             self::assertSame(200, $accepted->getStatusCode());
-            self::assertSame([], $reporter->events);
+            self::assertSame(0, count($reporter->events));
 
             self::assertSame(400, $controller->track(
                 $this->request('{'),
