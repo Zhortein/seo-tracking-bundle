@@ -277,10 +277,6 @@ final readonly class JourneyProvider implements JourneyProviderInterface
             );
         }
 
-        if ([] === $steps) {
-            throw new \LogicException('A journey path must contain at least one step.');
-        }
-
         return new JourneyPath($steps, $knownPredecessor, $cyclic, $truncated);
     }
 
