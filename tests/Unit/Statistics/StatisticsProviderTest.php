@@ -27,6 +27,7 @@ final class StatisticsProviderTest extends TestCase
                 'cpc',
                 'article',
                 'en',
+                ['tenant' => 'acme', 'tier' => 1, 'enabled' => true],
             ),
             new HitObservation(
                 new \DateTimeImmutable('2026-07-01 23:30:00 UTC'),
@@ -40,6 +41,7 @@ final class StatisticsProviderTest extends TestCase
                 'cpc',
                 'article',
                 'en',
+                ['tenant' => 'acme', 'tier' => '1', 'enabled' => false],
             ),
             new HitObservation(
                 new \DateTimeImmutable('2026-07-02 23:30:00 UTC'),
@@ -53,6 +55,7 @@ final class StatisticsProviderTest extends TestCase
                 'email',
                 'home',
                 'fr',
+                ['tenant' => 'beta', 'tier' => 1],
             ),
             new HitObservation(
                 null,
@@ -99,6 +102,13 @@ final class StatisticsProviderTest extends TestCase
         self::assertSame('2026-07-02', $report->trend[0]->date->format('Y-m-d'));
         self::assertSame(2, $report->trend[0]->hits);
         self::assertSame('2026-07-03', $report->trend[1]->date->format('Y-m-d'));
+        self::assertSame(['enabled', 'tenant', 'tier'], array_column($report->dimensions, 'name'));
+        self::assertSame(['acme', 'beta'], array_column($report->dimensions[1]->values, 'value'));
+        self::assertSame([2, 1], array_column($report->dimensions[1]->values, 'count'));
+        self::assertSame([1, '1'], array_column($report->dimensions[2]->values, 'value'));
+        self::assertSame(['integer', 'string'], array_column($report->dimensions[2]->values, 'type'));
+        self::assertSame(['false', 'true'], array_column($report->dimensions[0]->values, 'label'));
+        self::assertSame(['boolean', 'boolean'], array_column($report->dimensions[0]->values, 'type'));
     }
 
     public function testFilterAndLimitValidation(): void
@@ -108,5 +118,21 @@ final class StatisticsProviderTest extends TestCase
             new \DateTimeImmutable('2026-07-02'),
             new \DateTimeImmutable('2026-07-01'),
         );
+    }
+
+    public function testDimensionFiltersUseCollectionNormalization(): void
+    {
+        $filter = new StatisticsFilter(dimensions: [
+            'tenant' => 'acme',
+            'enabled' => true,
+        ]);
+
+        self::assertSame([
+            'enabled' => true,
+            'tenant' => 'acme',
+        ], $filter->dimensions);
+
+        $this->expectException(\InvalidArgumentException::class);
+        new StatisticsFilter(dimensions: ['invalid key' => 'not-supported']);
     }
 }

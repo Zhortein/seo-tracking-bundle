@@ -9,14 +9,15 @@ use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
 final readonly class StatisticsReport
 {
     /**
-     * @param list<RankedValue> $topPages
-     * @param list<RankedValue> $sources
-     * @param list<RankedValue> $campaigns
-     * @param list<RankedValue> $mediums
-     * @param list<RankedValue> $pageTypes
-     * @param list<RankedValue> $routes
-     * @param list<RankedValue> $languages
-     * @param list<TrendPoint>  $trend
+     * @param list<RankedValue>      $topPages
+     * @param list<RankedValue>      $sources
+     * @param list<RankedValue>      $campaigns
+     * @param list<RankedValue>      $mediums
+     * @param list<RankedValue>      $pageTypes
+     * @param list<RankedValue>      $routes
+     * @param list<RankedValue>      $languages
+     * @param list<TrendPoint>       $trend
+     * @param list<DimensionRanking> $dimensions
      */
     public function __construct(
         public StatisticsFilter $filter,
@@ -29,6 +30,7 @@ final readonly class StatisticsReport
         public array $routes,
         public array $languages,
         public array $trend,
+        public array $dimensions = [],
     ) {
     }
 }

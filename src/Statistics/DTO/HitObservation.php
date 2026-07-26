@@ -6,6 +6,9 @@ namespace Zhortein\SeoTrackingBundle\Statistics\DTO;
 
 final readonly class HitObservation
 {
+    /**
+     * @param array<string, string|int|float|bool> $dimensions
+     */
     public function __construct(
         public ?\DateTimeImmutable $calledAt,
         public bool $bot,
@@ -18,6 +21,7 @@ final readonly class HitObservation
         public ?string $medium,
         public ?string $pageType,
         public ?string $language,
+        public array $dimensions = [],
     ) {
     }
 }

@@ -61,6 +61,8 @@ php bin/console doctrine:migrations:migrate
 
 Existing rows remain valid with `NULL`. Applications using a custom hit entity with the trait receive the same mapping. Applications implementing the marker interface without the trait can add compatible `getDimensions()` / `setDimensions()` methods or replace `TrackingEntityAccessor`; otherwise the optional values are ignored to preserve the historical custom-entity contract.
 
+The [statistics API](statistics.md) can apply exact, type-sensitive dimension filters and exposes a typed ranking for every collected key. Its default Doctrine source performs JSON matching after hydration to keep the behavior identical on supported databases.
+
 ## Privacy guidance
 
 Do not place names, email addresses, account identifiers, free-form user input, IP addresses or fingerprinting attributes in dimensions. Prefer a small controlled vocabulary that answers a defined reporting question. If a dimension is only useful temporarily, align its lifecycle with the hit-retention policy rather than copying it to a longer-lived store.
