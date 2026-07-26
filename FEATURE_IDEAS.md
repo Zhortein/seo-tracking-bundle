@@ -1,60 +1,45 @@
-# ✨ Feature Ideas for SeoTrackingBundle
+# Roadmap for SeoTrackingBundle
 
-This file lists potential improvements and optional features that could be added to the bundle in future versions.
+This file lists improvements deliberately left outside the 1.3 release. Items are exploratory unless they are attached to a GitHub milestone.
 
-> 💡 Feel free to contribute or open issues if you have ideas or suggestions!
+The bundle must remain generic: application-specific behavior belongs in configuration, replaceable services, events or overrideable templates.
 
 ---
 
-## ✅ Validated ideas to consider implementing
+## Data lifecycle
 
-### 1. Ignore bot traffic
-Skip tracking for known bots (Googlebot, Bingbot...) based on the User-Agent.
-```php
-if (preg_match('/bot|crawl|slurp|spider/i', $userAgent)) {
-    return new JsonResponse(['status' => 'ignored - bot']);
-}
-```
+- Optional command and retention policy for purging old hits.
+- Explicit historical grouping consolidation and `grouping_key` backfill. This needs an application-owned duplicate-retention policy before the column can safely become non-null.
+- Optional consent hook that lets an application decide when frontend tracking starts without coupling the bundle to one consent manager.
 
-### 2. Truncate long strings
-To avoid potential DB errors, truncate referer, userAgent, UTM values, etc. to a reasonable size (e.g. 255 or 512 chars).
+## Tracking
 
-### 3. Sanitize input values
-Add a helper like:
+- Configurable Symfony RateLimiter integration for public tracking endpoints.
+- Extensible bot classification beyond the deliberately small default detector.
+- Optional error or invalid-event tracking through a separate, documented contract.
+- Visitor-flow reports based on `parentHit`, with clear expiry and privacy semantics. No “unique visitor” metric should be introduced without a reliable identity model and documented consent implications.
+- Optional structured metadata for application-defined dimensions, with portable Doctrine mapping considered before platform-specific JSON features.
 
-```php
-function sanitize(?string $value, int $maxLength = 255): ?string
-```
-Then use it for campaign, term, medium, etc.
+## Statistics and presentation
 
-### 4. Rate limiting
-Add a [Symfony RateLimiter](https://symfony.com/doc/current/rate_limiter.html) to /page-call/track endpoint to prevent abuse or unexpected flood of requests.
+- Cache and pagination policies for large datasets.
+- Optional pre-aggregated storage for high-volume installations.
+- Additional presentation themes and lightweight charts without making a frontend framework mandatory.
+- Export adapters for CSV or external analytics systems.
 
-### 5. Extract tracking logic into a dedicated service `#refacto` `#priority-high`
-Move logic from controller into a PageCallTracker service to ease unit testing and future reuse.
+## Compatibility
 
-### 6. Add support for tracking errors or invalid events
-Allow logging or tracking of broken pages, 404s, or user misclicks via a custom endpoint.
+- Expand database CI when a platform can be supported continuously.
+- Review Symfony 7.3 support separately once its ecosystem constraints no longer permit a secure dependency set.
 
-### 7. Add a CLI tool to clean old hits
-A Symfony Command to purge hits older than X months, or hits without exit timestamps.
+## Delivered in 1.3
 
-### 8. Add a lightweight dashboard or API
-Expose a simple admin route or API to visualize aggregated stats (nbCalls, exits, duration, referrers...).
+- Typed statistics provider, DTOs and filters.
+- Overrideable Twig rendering with an optional Bootstrap 5 theme.
+- Input validation and length limits.
+- IPv4 and IPv6 anonymization.
+- Configurable entities, factories and endpoint URLs.
+- Reliable classic, Turbo and no-beacon tracking lifecycles.
+- Cross-platform functional grouping key.
 
-## ❓ Under consideration
-
-### 🔐 GDPR: add optional consent handling
-Require explicit frontend opt-in before tracking starts. Could integrate with existing cookie banner solutions.
-
-### 🧠 Enhanced visitor flow tracking
-Use parentHitId to build visit trees or paths. Consider how far this should go (e.g. depth limit, expiration, session-based grouping...).
-
-### 📦 Support PostgreSQL JSON for extra metrics
-Allow developers to store extra info (e.g. A/B test variation, user context...) in a JSON field.
-
-## 🚫 Rejected ideas (for now)
-(none yet)
-
-## 🗓️ Last update
-Generated on: 2025-07-01
+Last reviewed: 2026-07-26.

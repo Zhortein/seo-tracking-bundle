@@ -28,6 +28,27 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $pageCallClass = $config['page_call_class'] ?? null;
+        $pageCallHitClass = $config['page_call_hit_class'] ?? null;
+        $anonymization = $config['anonymization'] ?? null;
+        if (!is_string($pageCallClass) || !is_string($pageCallHitClass) || !is_array($anonymization)) {
+            throw new \LogicException('Invalid SEO tracking entity configuration.');
+        }
+
+        $ipv4Prefix = $anonymization['ipv4_prefix'] ?? null;
+        $ipv6Prefix = $anonymization['ipv6_prefix'] ?? null;
+        if (!is_int($ipv4Prefix) || !is_int($ipv6Prefix)) {
+            throw new \LogicException('Invalid SEO tracking anonymization configuration.');
+        }
+
+        $container->setParameter('zhortein_seo_tracking.page_call_class', $pageCallClass);
+        $container->setParameter('zhortein_seo_tracking.page_call_hit_class', $pageCallHitClass);
+        $container->setParameter('zhortein_seo_tracking.anonymization.ipv4_prefix', $ipv4Prefix);
+        $container->setParameter('zhortein_seo_tracking.anonymization.ipv6_prefix', $ipv6Prefix);
+        $container->setParameter('zhortein_seo_tracking.tracking_url', $this->optionalString($config['tracking_url'] ?? null, 'tracking_url'));
+        $container->setParameter('zhortein_seo_tracking.exit_url', $this->optionalString($config['exit_url'] ?? null, 'exit_url'));
+        $container->setParameter('zhortein_seo_tracking.statistics.template', $this->statisticsTemplate($config['statistics'] ?? null));
+
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
             $config['easylyse_api_page_exit_endpoint'] ?? null,
@@ -66,6 +87,15 @@ YAML);
         // Register dynamic targetEntities for Doctrine
         $container->prependExtensionConfig('doctrine', [
             'orm' => [
+                'mappings' => [
+                    'ZhorteinSeoTrackingBundle' => [
+                        'is_bundle' => false,
+                        'type' => 'attribute',
+                        'dir' => realpath(__DIR__.'/../../Entity'),
+                        'prefix' => 'Zhortein\SeoTrackingBundle\Entity',
+                        'alias' => 'ZhorteinSeoTracking',
+                    ],
+                ],
                 'resolve_target_entities' => [
                     PageCallInterface::class => $config['page_call_class'],
                     PageCallHitInterface::class => $config['page_call_hit_class'],
@@ -101,5 +131,34 @@ YAML);
         $frameworkBundle = $container->getParameter('kernel.bundles_metadata')['FrameworkBundle'] ?? null;
 
         return $frameworkBundle && is_file($frameworkBundle['path'].'/Resources/config/asset_mapper.php');
+    }
+
+    private function optionalString(mixed $value, string $option): ?string
+    {
+        if (null === $value || is_string($value)) {
+            return $value;
+        }
+
+        throw new \LogicException(sprintf('The "%s" option must be a string or null.', $option));
+    }
+
+    private function statisticsTemplate(mixed $statistics): ?string
+    {
+        if (!is_array($statistics)) {
+            throw new \LogicException('The "statistics" option must be an array.');
+        }
+
+        $template = $statistics['template'] ?? null;
+        if (null !== $template) {
+            if (!is_string($template) || '' === trim($template)) {
+                throw new \LogicException('The "statistics.template" option must be a non-empty string or null.');
+            }
+
+            return $template;
+        }
+
+        return 'bootstrap5' === ($statistics['theme'] ?? null)
+            ? '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig'
+            : null;
     }
 }

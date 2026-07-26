@@ -6,6 +6,114 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [Unreleased]
+
+---
+
+## [1.3.0] – 2026-07-26
+
+### Added
+
+- Configurable factories for `PageCallInterface` and `PageCallHitInterface`.
+- Configurable tracking and exit URLs, with route-generated defaults.
+- IPv4 and IPv6 prefix anonymization through a replaceable service.
+- Canonical URL grouping while preserving the observed URL on each hit.
+- A deterministic non-null grouping key for newly tracked calls.
+- A typed statistics API with period, timezone, robot and page-type filters.
+- Reliable summaries, duration samples, top pages, UTM rankings, route/type/language breakdowns and daily evolution.
+- An optional, overrideable Bootstrap 5 Twig statistics theme.
+
+### Fixed
+
+- Configured entity classes are now used by repositories, creation, exit handling and events.
+- Malformed JSON, missing optional fields and absent user agents return controlled responses.
+- Hit closure is idempotent.
+- Stimulus/Turbo lifecycle handling closes hits once, avoids duplicate listeners and starts a new hit when a hidden page becomes visible again.
+- Exit delivery falls back to `fetch(..., {keepalive: true})` when `sendBeacon()` is missing or refuses the payload.
+- The distributed Stimulus controller is valid JavaScript.
+- The ineffective nullable UTM composite uniqueness constraint is replaced by a grouping-key constraint.
+- The PHPStan baseline was removed after fixing the audited errors.
+- CI now verifies SQLite, PostgreSQL 16 and MySQL 8.4 in addition to the PHP, Symfony and Node matrices.
+
+### Migration
+
+- Default entities require a Doctrine migration. See [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
+
+---
+
+## [1.2.11] – 2026-04-09
+
+### Fixed
+
+- Switched bundle service loading from the removed XML file to the YAML service definition.
+
+---
+
+## [1.2.10] – 2026-04-09
+
+### Changed
+
+- Added DoctrineBundle 3.2 compatibility.
+
+---
+
+## [1.2.9] – 2026-04-09
+
+### Changed
+
+- Added Symfony 8 and Doctrine ORM 4 compatibility.
+
+---
+
+## [1.2.8] – 2026-02-24
+
+### Added
+
+- Added the `idSite` page-call field.
+
+---
+
+## [1.2.7] – 2026-02-18
+
+### Fixed
+
+- Normalized empty Twig route arguments.
+
+---
+
+## [1.2.6] – 2026-02-18
+
+### Fixed
+
+- Corrected the Stimulus route-argument value declaration and its Twig default.
+
+---
+
+## [1.2.5] – 2026-02-18
+
+### Changed
+
+- Updated package compatibility metadata.
+
+---
+
+## [1.2.4] – 2026-02-18
+
+### Fixed
+
+- Allowed null referrers and updated hit duration when an exit date is set.
+- Corrected the default Easylyse endpoints.
+
+---
+
+## [1.2.3] – 2025-08-11
+
+### Added
+
+- Added optional Easylyse page-call and exit forwarding.
+
+---
+
 ## [1.2.2] – 2025-07-06
 
 ### ✨ Added
@@ -67,6 +175,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### 🎉 Initial release
 - Symfony bundle with Stimulus-based page tracking.
 - Tracks: current URL, route, UTM params, language, screen size, entry/exit time.
-- GDPR-friendly: no cookies, no personal data.
+- Cookie-free asynchronous page tracking with IP anonymization.
 - Profiler integration to debug UTM parameters.
 - Async tracking via `fetch()` and exit detection.

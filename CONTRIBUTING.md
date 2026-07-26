@@ -59,14 +59,30 @@ make csfixer
 make test 
 ```
 
+The same checks can be run without Docker when PHP, Composer and Node.js are
+available locally:
+
+```bash
+composer validate --strict --no-check-publish
+composer qa
+cd assets
+npm run lint
+npm test
+```
+
+GitHub Actions runs these checks on PHP 8.3, 8.4 and 8.5 (lowest and current
+supported dependencies), plus Node.js 22 and 24. The default schema and
+functional grouping behavior are also exercised on SQLite, PostgreSQL 16 and
+MySQL 8.4.
+
 ## 🔀 Submitting a pull request
 1. Fork the repository
-2. Create your feature branch:
+2. Create your feature branch from `develop`:
 ```bash
 git checkout -b feature/my-awesome-change
 ```
 3. Commit your changes (see below for style guidelines)
-4. Push to your branch and open a PR against `main`
+4. Push to your branch and open a PR against `develop`
    
 Please include:
 * A clear description of what the PR does

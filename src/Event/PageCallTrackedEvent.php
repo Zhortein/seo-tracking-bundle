@@ -3,23 +3,23 @@
 namespace Zhortein\SeoTrackingBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
-use ZhorTein\SeoTrackingBundle\Entity\PageCall;
-use ZhorTein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 final class PageCallTrackedEvent extends Event
 {
     public function __construct(
-        protected readonly PageCall $pageCall,
-        protected readonly PageCallHit $pageCallHit,
+        protected readonly PageCallInterface $pageCall,
+        protected readonly PageCallHitInterface $pageCallHit,
     ) {
     }
 
-    public function getPageCall(): PageCall
+    public function getPageCall(): PageCallInterface
     {
         return $this->pageCall;
     }
 
-    public function getPageCallHit(): PageCallHit
+    public function getPageCallHit(): PageCallHitInterface
     {
         return $this->pageCallHit;
     }

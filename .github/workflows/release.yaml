@@ -1,0 +1,112 @@
+name: Publish release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish tested main
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+
+      - name: Validate release inputs
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="$(jq -r '.version' assets/package.json)"
+          manifest=".github/releases/${version}.json"
+          notes="docs/releases/${version}.md"
+
+          test "$version" != "null"
+          test -f "$manifest"
+          test -f "$notes"
+          test "$(jq -r '.version' "$manifest")" = "$version"
+          jq -e '.issues | type == "array" and length > 0 and all(type == "number")' "$manifest" >/dev/null
+
+          main_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq '.sha')"
+          if [ "$main_sha" != "$RELEASE_SHA" ]; then
+            echo "A newer main commit exists; its CI run will publish the release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if gh release view "$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $version already exists."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "manifest=$manifest" >> "$GITHUB_OUTPUT"
+          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+
+      - name: Organize milestone and publish
+        if: steps.release.outputs.skip == 'false'
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          MANIFEST: ${{ steps.release.outputs.manifest }}
+          NOTES: ${{ steps.release.outputs.notes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          milestone="$(
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/milestones?state=all&per_page=100" \
+              --jq ".[] | select(.title == \"${VERSION}\") | .number" |
+              head -n 1
+          )"
+
+          if [ -z "$milestone" ]; then
+            milestone="$(
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/milestones" \
+                -f title="$VERSION" \
+                -f description="Tracking correctness, extensibility, statistics API and Twig rendering." \
+                --jq '.number'
+            )"
+          fi
+
+          while read -r issue; do
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/${issue}" \
+              -F milestone="$milestone" \
+              -f state=closed \
+              -f state_reason=completed \
+              >/dev/null
+          done < <(jq -r '.issues[]' "$MANIFEST")
+
+          while read -r issue; do
+            state="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${issue}" --jq '.state')"
+            test "$state" = "closed"
+          done < <(jq -r '.issues[]' "$MANIFEST")
+
+          gh release create "$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$RELEASE_SHA" \
+            --title "$VERSION" \
+            --notes-file "$NOTES"
+
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/milestones/${milestone}" \
+            -f state=closed \
+            >/dev/null

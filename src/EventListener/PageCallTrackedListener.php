@@ -17,6 +17,9 @@ readonly class PageCallTrackedListener
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     private function sendApiRequest(string $url, array $payload): void
     {
         try {
@@ -55,11 +58,10 @@ readonly class PageCallTrackedListener
         $pageCall = $event->getPageCall();
         $pageCallHit = $event->getPageCallHit();
 
-        // 🔧 Mapping → structure attendue par Easylyze::handleOutgoingHit()
         $payload = [
-            'pageCallId' => $pageCall->getId(),
-            'hitId' => $pageCallHit->getId(),
-            'exitedAt' => $this->fmtDate(method_exists($pageCallHit, 'getExitedAt') ? $pageCallHit->getExitedAt() : null),
+            'pageCallId' => $this->value($pageCall, 'getId'),
+            'hitId' => $this->value($pageCallHit, 'getId'),
+            'exitedAt' => $this->fmtDate($this->value($pageCallHit, 'getExitedAt')),
         ];
 
         $this->sendApiRequest($this->seoTrackingOptions->pageExitEndpoint, $payload);
@@ -75,51 +77,67 @@ readonly class PageCallTrackedListener
         $pageCall = $event->getPageCall();
         $pageCallHit = $event->getPageCallHit();
 
-        // 🔧 Mapping → structure attendue par Easylyze::handleIncomingHit()
         $payload = [
             // PageCall
-            'pageCallId' => $pageCall->getId(),
-            'url' => method_exists($pageCall, 'getUrl') ? (string) $pageCall->getUrl() : null,
-            'route' => method_exists($pageCall, 'getRoute') ? $pageCall->getRoute() : null,
-            'routeArgs' => method_exists($pageCall, 'getRouteArgs') ? (array) $pageCall->getRouteArgs() : [],
-            'campaign' => method_exists($pageCall, 'getCampaign') ? $pageCall->getCampaign() : null,
-            'medium' => method_exists($pageCall, 'getMedium') ? $pageCall->getMedium() : null,
-            'source' => method_exists($pageCall, 'getSource') ? $pageCall->getSource() : null,
-            'term' => method_exists($pageCall, 'getTerm') ? $pageCall->getTerm() : null,
-            'content' => method_exists($pageCall, 'getContent') ? $pageCall->getContent() : null,
-            'firstCalledAt' => $this->fmtDate(method_exists($pageCall, 'getFirstCalledAt') ? $pageCall->getFirstCalledAt() : null),
-            'lastCalledAt' => $this->fmtDate(method_exists($pageCall, 'getLastCalledAt') ? $pageCall->getLastCalledAt() : null),
-            'bot' => method_exists($pageCall, 'isBot') && $pageCall->isBot(),
+            'pageCallId' => $this->value($pageCall, 'getId'),
+            'url' => $this->value($pageCall, 'getUrl'),
+            'canonicalUrl' => $this->value($pageCall, 'getCanonicalUrl'),
+            'route' => $this->value($pageCall, 'getRoute'),
+            'routeArgs' => $this->value($pageCall, 'getRouteArgs', []),
+            'campaign' => $this->value($pageCall, 'getCampaign'),
+            'medium' => $this->value($pageCall, 'getMedium'),
+            'source' => $this->value($pageCall, 'getSource'),
+            'term' => $this->value($pageCall, 'getTerm'),
+            'content' => $this->value($pageCall, 'getContent'),
+            'firstCalledAt' => $this->fmtDate($this->value($pageCall, 'getFirstCalledAt')),
+            'lastCalledAt' => $this->fmtDate($this->value($pageCall, 'getLastCalledAt')),
+            'bot' => true === $this->value($pageCall, 'isBot', false),
 
             // PageCallHit
-            'hitId' => $pageCallHit->getId(),
-            'parentHitId' => method_exists($pageCallHit, 'getParentHit') && $pageCallHit->getParentHit()?->getId(),
-            'delaySincePreviousHit' => method_exists($pageCallHit, 'getDelaySincePreviousHit') ? $pageCallHit->getDelaySincePreviousHit() : null,
-            'hitByBot' => method_exists($pageCallHit, 'isBot') && $pageCallHit->isBot(),
-            'pageTitle' => method_exists($pageCallHit, 'getPageTitle') ? $pageCallHit->getPageTitle() : null,
-            'pageType' => method_exists($pageCallHit, 'getPageType') ? $pageCallHit->getPageType() : null,
-            'referrer' => method_exists($pageCallHit, 'getReferrer') ? $pageCallHit->getReferrer() : null,
-            'userAgent' => method_exists($pageCallHit, 'getUserAgent') ? $pageCallHit->getUserAgent() : null,
-            'anonymizedIp' => method_exists($pageCallHit, 'getAnonymizedIp') ? $pageCallHit->getAnonymizedIp() : null,
-            'language' => method_exists($pageCallHit, 'getLanguage') ? $pageCallHit->getLanguage() : null,
-            'screenWidth' => method_exists($pageCallHit, 'getScreenWidth') ? $pageCallHit->getScreenWidth() : null,
-            'screenHeight' => method_exists($pageCallHit, 'getScreenHeight') ? $pageCallHit->getScreenHeight() : null,
-            'calledAt' => $this->fmtDate(method_exists($pageCallHit, 'getCalledAt') ? $pageCallHit->getCalledAt() : null),
-            'exitedAt' => $this->fmtDate(method_exists($pageCallHit, 'getExitedAt') ? $pageCallHit->getExitedAt() : null),
+            'hitId' => $this->value($pageCallHit, 'getId'),
+            'parentHitId' => $this->value($this->value($pageCallHit, 'getParentHit'), 'getId'),
+            'delaySincePreviousHit' => $this->value($pageCallHit, 'getDelaySincePreviousHit'),
+            'hitByBot' => true === $this->value($pageCallHit, 'isBot', false),
+            'pageUrl' => $this->value($pageCallHit, 'getUrl'),
+            'pageTitle' => $this->value($pageCallHit, 'getPageTitle'),
+            'pageType' => $this->value($pageCallHit, 'getPageType'),
+            'referrer' => $this->value($pageCallHit, 'getReferrer'),
+            'userAgent' => $this->value($pageCallHit, 'getUserAgent'),
+            'anonymizedIp' => $this->value($pageCallHit, 'getAnonymizedIp'),
+            'language' => $this->value($pageCallHit, 'getLanguage'),
+            'screenWidth' => $this->value($pageCallHit, 'getScreenWidth'),
+            'screenHeight' => $this->value($pageCallHit, 'getScreenHeight'),
+            'calledAt' => $this->fmtDate($this->value($pageCallHit, 'getCalledAt')),
+            'exitedAt' => $this->fmtDate($this->value($pageCallHit, 'getExitedAt')),
         ];
 
         $this->sendApiRequest($this->seoTrackingOptions->pageCallEndpoint, $payload);
     }
 
-    private function fmtDate(?\DateTimeInterface $dt): ?string
+    private function fmtDate(mixed $date): ?string
     {
-        return $dt?->format(\DateTimeInterface::ATOM);
+        return $date instanceof \DateTimeInterface ? $date->format(\DateTimeInterface::ATOM) : null;
     }
 
-    private function safeContent($response): ?string
+    private function value(mixed $entity, string $method, mixed $default = null): mixed
+    {
+        if (!is_object($entity) || !is_callable([$entity, $method])) {
+            return $default;
+        }
+
+        return $entity->{$method}();
+    }
+
+    private function safeContent(mixed $response): ?string
     {
         try {
-            return $response->getContent(false);
+            if (!is_object($response) || !is_callable([$response, 'getContent'])) {
+                return null;
+            }
+
+            $content = $response->getContent(false);
+
+            return is_string($content) ? $content : null;
         } catch (\Throwable) {
             return null;
         }

@@ -10,7 +10,10 @@ trait PageCallHitTrait
     #[ORM\JoinColumn(nullable: false)]
     private ?PageCallInterface $pageCall = null;
 
-    #[ORM\Column(length: 512)]
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $url = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
     private ?string $referrer = null;
 
     #[ORM\Column(length: 512, nullable: true)]
@@ -82,6 +85,18 @@ trait PageCallHitTrait
         return $this;
     }
 
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
     public function getReferrer(): ?string
     {
         return $this->referrer;
@@ -139,6 +154,7 @@ trait PageCallHitTrait
     {
         $this->exitedAt = $exitedAt;
         $this->updateDuration();
+
         return $this;
     }
 

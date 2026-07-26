@@ -11,12 +11,23 @@ Symfony bundle to track page views, UTM campaigns and basic engagement, with opt
 composer require zhortein/seo-tracking-bundle
 ```
 
-Symfony 6.3+ and 7.x are fully supported.
+### Compatibility
+
+| Layer | Supported versions |
+|---|---|
+| PHP | 8.3+ |
+| Symfony and AssetMapper | 7.3, 7.4 and 8.x |
+| Doctrine DBAL | 3.x and 4.x |
+| DoctrineBundle | 2.15+ and 3.2+ |
+| Doctrine ORM | 3.3+ and 4.x |
+| Stimulus | 3.x |
+
+CI exercises SQLite, PostgreSQL 16 and MySQL 8.4. The tracking and statistics abstractions can support other Doctrine platforms, but they are not part of the published CI guarantee.
 
 If you're not using Symfony Flex, enable the bundle manually in config/bundles.php:
 
 ```php
-Zhortein\SeoTrackingBundle\SeoTrackingBundle::class => ['all' => true],
+Zhortein\SeoTrackingBundle\ZhorteinSeoTrackingBundle::class => ['all' => true],
 ```
 
 ## ⚠️ Database migration required!
@@ -53,6 +64,14 @@ Instead of writing the `stimulus_controller(...)` call manually, you can use the
 <div {{ seo_tracking('home') }}></div>
 ```
 
+An explicit canonical URL can be supplied as the second argument:
+
+```twig
+<div {{ seo_tracking('article', canonical_url) }}></div>
+```
+
+When it is omitted, the Stimulus controller uses the page's `<link rel="canonical">` when present, then falls back to the current URL for grouping.
+
 This will generate:
 
 ```html
@@ -69,12 +88,13 @@ The function automatically injects the current Symfony route and route parameter
 
 ## 🧠 What does this bundle track?
 
-The bundle automatically collects basic visit tracking data using Stimulus and <code>fetch()</code> calls, without setting cookies 
-or requiring consent (GDPR-friendly by default). Data is sent asynchronously when a page is loaded and just before 
+The bundle automatically collects basic visit tracking data using Stimulus and <code>fetch()</code> calls, without setting cookies.
+Data is sent asynchronously when a page is loaded and just before
 the user exits the page.
 
 Tracked data includes:
 * 📄 Current URL
+* 🔗 Canonical URL, when provided
 * 🔀 Symfony route and route arguments
 * 📈 UTM campaign data (from URL)
 * 🌐 Browser language (navigator.language)
@@ -83,17 +103,20 @@ Tracked data includes:
 
 ## ⚙️ How it works
 
-1. On page load, a fetch() request is sent to the tracking endpoint.
+1. On page load, a `fetch()` request is sent to the tracking endpoint.
 2. The server stores a new PageCall and a new PageCallHit.
-3. A listener is added to the page to detect page exit.
-4. On page unload (tab close, navigation), a fetch() request is sent to update the exitedAt timestamp and calculate the duration.
+3. Stimulus registers visibility, page-hide and Turbo lifecycle listeners once.
+4. On page exit or a Turbo page change, `sendBeacon()` closes the hit. A keepalive `fetch()` is used when beacons are unavailable.
+5. Returning to a hidden page starts a fresh hit, linked to the previous one when session storage is available.
+
+If JavaScript or `fetch()` is unavailable, the page continues normally and no client-side hit is created.
 
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).
 - The bundle does not store any cookies or personal identifiers.
 - Works well in static pages, Turbo/Stimulus navigation or multi-page apps.
-- Fully GDPR-compliant by design (but double-check based on your legal context).
+- The defaults minimize collected network data, but the consuming application remains responsible for its legal basis, retention policy and privacy notice.
 
 ## 📐 Data model overview
 
@@ -123,7 +146,8 @@ This entity stores information related to a visit (hit) and is related to a Page
 * pageCall: related PageCall
 * referrer: URL of the referrer
 * userAgent: received User Agent, raw format
-* anonymizedIP: IP address of the visitor anonymized (GDPR compliance)
+* url: actual URL observed for this hit
+* anonymizedIP: IP address anonymized to `/24` for IPv4 and `/64` for IPv6 by default
 * calledAt: datetime of the call
 * exitedAt: datetime of page exit
 * durationSeconds: calculated duration of the visit
@@ -136,7 +160,7 @@ This entity stores information related to a visit (hit) and is related to a Page
 * delaySincePreviousHit: delay in seconds between current hit and its parent.
 * pageType: page data type, if provided.
 
-> Note: `parentHit` does not identify users, it only links anonymous visits together. It is designed to remain GDPR-compliant when used properly.
+> Note: `parentHit` does not introduce a persistent identifier; it links consecutive hits when session storage is available. The consuming application must still assess its use under its own privacy policy and legal context.
 
 ## 🔁 Listen to PageCallTrackedEvent
 
@@ -144,14 +168,14 @@ The bundle dispatches an event every time a tracked visit is recorded. You can l
 like this example.
 
 ```php
-use ZhorTein\SeoTrackingBundle\Event\PageCallTrackedEvent;
+use Zhortein\SeoTrackingBundle\Event\PageCallTrackedEvent;
 
 class MyCustomListener
 {
     public function __invoke(PageCallTrackedEvent $event): void
     {
-        $pageCall = $event->pageCall;
-        $hit = $event->pageCallHit;
+        $pageCall = $event->getPageCall();
+        $hit = $event->getPageCallHit();
 
         // Example: export to your own system
         // or send it to a queue, or just log it
@@ -176,7 +200,7 @@ The Symfony Profiler only reflects **synchronous request-level data**.
 
 Page tracking hits (`PageCallHit`), which are registered via **asynchronous JavaScript calls** (`fetch()` or `navigator.sendBeacon()`), are **not visible in the profiler toolbar**.
 
-> If you need to debug or analyze `PageCallHit` records, refer to your database directly or use the dedicated interface provided by the future companion tool (under development).
+For application-facing reports, use the typed [statistics API](docs/statistics.md). The profiler remains limited to the synchronous request.
 
 ## 🔁 Customizing Entities via `resolve_target_entities`
 
@@ -221,7 +245,7 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 #[ORM\Entity]
 class MyCustomPageCall implements PageCallInterface
 {
-    use \Zhortein\SeoTrackingBundle\Entity\Traits\PageCallTrait;
+    use \Zhortein\SeoTrackingBundle\Entity\PageCallTrait;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     private ?User $user = null;
@@ -231,6 +255,19 @@ class MyCustomPageCall implements PageCallInterface
 
 ```
 You can use the provided `PageCallTrait` and `PageCallHitTrait` to avoid duplicating field declarations or missing fields.
+
+The controller uses the configured classes for repository lookup and creation. Classes using a constructor with required arguments can replace the default factories:
+
+```yaml
+# config/services.yaml
+services:
+    App\Seo\PageCallFactory: ~
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface:
+        alias: App\Seo\PageCallFactory
+```
+
+Implement `PageCallFactoryInterface::create()` and return your configured `PageCallInterface`. The equivalent `PageCallHitFactoryInterface` is available for hits. `TrackingEntityAccessor` can also be replaced when a custom entity deliberately does not expose the historical methods supplied by the bundle traits.
 
 ### ⚠️ Notes
 
@@ -247,4 +284,49 @@ php bin/console doctrine:migrations:migrate
 > For technical details on how this is achieved, see the ZhorteinSeoTrackingExtension class and the use of Symfony's 
 > prependExtensionConfig() method.
 
+## IP anonymization
 
+The built-in anonymizer supports IPv4 and IPv6. Prefixes can be configured without replacing the tracking controller:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    anonymization:
+        ipv4_prefix: 24
+        ipv6_prefix: 64
+```
+
+For a different policy, decorate or replace `Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizerInterface`.
+
+## Tracking endpoint URLs
+
+By default, the Twig helper generates URLs from the bundle routes, so an application-level route prefix is respected. Explicit URLs can be configured for a reverse proxy, another host or a custom controller:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    tracking_url: '/analytics/page'
+    exit_url: '/analytics/page/exit'
+```
+
+The values are passed to Stimulus as `trackingUrl` and `exitUrl`. Applications calling `stimulus_controller()` directly can provide the same values without changing the distributed controller.
+
+## Statistics API and Twig rendering
+
+The bundle exposes typed statistics independently from their presentation. A Bootstrap 5 theme is enabled by default, but Bootstrap is not a runtime dependency:
+
+```twig
+{{ seo_tracking_statistics() }}
+```
+
+For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
+
+## Upgrading to 1.3
+
+Update the package with:
+
+```bash
+composer require zhortein/seo-tracking-bundle:^1.3
+```
+
+The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout, exact checks and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).

@@ -9,6 +9,59 @@ services:
         resource: '../src/'
         exclude: '../src/{DependencyInjection,Entity,Kernel.php}'
 
+    Zhortein\SeoTrackingBundle\Controller\PageCallController:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallFactory:
+        arguments:
+            $className: '%zhortein_seo_tracking.page_call_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallHitFactory:
+        arguments:
+            $className: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallFactory
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallHitFactoryInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallHitFactory
+
+    Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGeneratorInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGenerator
+
+    Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer:
+        arguments:
+            $ipv4Prefix: '%zhortein_seo_tracking.anonymization.ipv4_prefix%'
+            $ipv6Prefix: '%zhortein_seo_tracking.anonymization.ipv6_prefix%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizerInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer
+
+    Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
+
+    Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
+        arguments:
+            $trackingUrl: '%zhortein_seo_tracking.tracking_url%'
+            $exitUrl: '%zhortein_seo_tracking.exit_url%'
+
+    Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource:
+        arguments:
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource
+
+    Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\StatisticsProvider
+
+    Zhortein\SeoTrackingBundle\Statistics\Twig\StatisticsRuntime:
+        arguments:
+            $defaultTemplate: '%zhortein_seo_tracking.statistics.template%'
+        tags: ['twig.runtime']
+
     # Configuration spécifique pour ton DataCollector
     Zhortein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector:
         tags:
