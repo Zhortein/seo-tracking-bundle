@@ -37,11 +37,7 @@ final readonly class HistoricalGroupingKeyBackfiller
         $this->validateMetadata($metadata);
 
         if ($options->mergeDuplicates && !$this->duplicateMerger->supports($this->pageCallClass)) {
-            throw new \LogicException(sprintf(
-                'Duplicate consolidation for %s requires a custom %s service.',
-                $this->pageCallClass,
-                DuplicatePageCallMergerInterface::class,
-            ));
+            throw new \LogicException(sprintf('Duplicate consolidation for %s requires a custom %s service.', $this->pageCallClass, DuplicatePageCallMergerInterface::class));
         }
 
         return $options->apply
@@ -290,11 +286,7 @@ final readonly class HistoricalGroupingKeyBackfiller
     {
         foreach (self::GROUPING_FIELDS as $field) {
             if (!$metadata->hasField($field)) {
-                throw new \LogicException(sprintf(
-                    'Configured page call %s must map a "%s" field to use grouping-key backfill.',
-                    $this->pageCallClass,
-                    $field,
-                ));
+                throw new \LogicException(sprintf('Configured page call %s must map a "%s" field to use grouping-key backfill.', $this->pageCallClass, $field));
             }
         }
 

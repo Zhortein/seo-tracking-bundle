@@ -29,11 +29,7 @@ final readonly class DefaultEntityDuplicatePageCallMerger implements DuplicatePa
         PageCallInterface $duplicate,
     ): void {
         if (!$survivor instanceof PageCall || !$duplicate instanceof PageCall) {
-            throw new \LogicException(sprintf(
-                '%s only supports the bundle default %s entity.',
-                self::class,
-                PageCall::class,
-            ));
+            throw new \LogicException(sprintf('%s only supports the bundle default %s entity.', self::class, PageCall::class));
         }
 
         if ($survivor === $duplicate) {
