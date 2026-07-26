@@ -39,7 +39,7 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $dispatcher = $container->get(EventDispatcherInterface::class);
             $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
             $purger = $container->get(HitRetentionPurger::class);
-            $journeys = $container->get(JourneyProviderInterface::class);
+            $journeys = $container->get('test.journey_provider');
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);

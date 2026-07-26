@@ -26,7 +26,7 @@ final class CustomEntityJourneyProviderTest extends TestCase
             $container = $kernel->getContainer()->get('test.service_container');
             self::assertInstanceOf(ContainerInterface::class, $container);
             $entityManager = $container->get(EntityManagerInterface::class);
-            $provider = $container->get(JourneyProviderInterface::class);
+            $provider = $container->get('test.journey_provider');
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(JourneyProviderInterface::class, $provider);
 

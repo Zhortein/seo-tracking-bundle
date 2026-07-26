@@ -12,6 +12,7 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface;
 use Zhortein\SeoTrackingBundle\ZhorteinSeoTrackingBundle;
 
 class TestKernel extends Kernel
@@ -65,6 +66,7 @@ class TestKernel extends Kernel
         $container->loadFromExtension('twig', [
             'strict_variables' => true,
         ]);
+        $container->setAlias('test.journey_provider', JourneyProviderInterface::class)->setPublic(true);
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
