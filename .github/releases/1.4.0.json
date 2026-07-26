@@ -1,0 +1,5 @@
+{
+  "version": "1.4.0",
+  "milestone_description": "Safe historical grouping backfill, opt-in retention and generic consent integration.",
+  "issues": [34, 35, 36, 37]
+}
