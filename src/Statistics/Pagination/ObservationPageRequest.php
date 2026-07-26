@@ -18,10 +18,7 @@ final readonly class ObservationPageRequest
         }
 
         if ($limit < 1 || $limit > self::MAX_LIMIT) {
-            throw new \InvalidArgumentException(sprintf(
-                'The statistics observation page size must be between 1 and %d.',
-                self::MAX_LIMIT,
-            ));
+            throw new \InvalidArgumentException(sprintf('The statistics observation page size must be between 1 and %d.', self::MAX_LIMIT));
         }
     }
 }
