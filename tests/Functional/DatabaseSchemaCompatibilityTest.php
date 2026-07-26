@@ -19,6 +19,8 @@ use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPurgeOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
 use Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
+use Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
 
 final class DatabaseSchemaCompatibilityTest extends TestCase
@@ -40,12 +42,14 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
             $purger = $container->get(HitRetentionPurger::class);
             $journeys = $container->get('test.journey_provider');
+            $statistics = $container->get('test.statistics_provider');
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
             self::assertInstanceOf(HistoricalGroupingKeyBackfiller::class, $backfiller);
             self::assertInstanceOf(HitRetentionPurger::class, $purger);
             self::assertInstanceOf(JourneyProviderInterface::class, $journeys);
+            self::assertInstanceOf(StatisticsProviderInterface::class, $statistics);
 
             $metadata = [
                 $entityManager->getClassMetadata(PageCall::class),
@@ -78,6 +82,10 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             self::assertSame(2, $journeyReport->summary->observedHits);
             self::assertSame(1, $journeyReport->summary->linkedHits);
             self::assertCount(1, $journeyReport->topTransitions);
+            $statisticsReport = $statistics->report(new StatisticsFilter(dimensions: ['tenant' => 'demo']));
+            self::assertSame(1, $statisticsReport->summary->pageCalls);
+            self::assertSame('tenant', $statisticsReport->dimensions[0]->name);
+            self::assertSame('demo', $statisticsReport->dimensions[0]->values[0]->value);
 
             $historical = (new PageCall())
                 ->setUrl('https://example.test/database')

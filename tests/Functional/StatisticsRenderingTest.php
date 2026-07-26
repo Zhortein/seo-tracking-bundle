@@ -48,6 +48,7 @@ final class StatisticsRenderingTest extends TestCase
                 ->setCalledAt($calledAt)
                 ->setExitedAt($calledAt->modify('+8 seconds'))
                 ->setPageType('article')
+                ->setDimensions(['tenant' => 'acme'])
                 ->setBot(false);
             $entityManager->persist($pageCall);
             $entityManager->persist($hit);
@@ -60,6 +61,8 @@ final class StatisticsRenderingTest extends TestCase
             self::assertStringContainsString('Human hits', $html);
             self::assertStringContainsString('https://example.test/rendered', $html);
             self::assertStringContainsString('2026-07-10', $html);
+            self::assertStringContainsString('Dimension: tenant', $html);
+            self::assertStringContainsString('acme', $html);
             self::assertStringNotContainsStringIgnoringCase('unique visitor', $html);
         } finally {
             $kernel->shutdown();

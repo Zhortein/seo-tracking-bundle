@@ -362,6 +362,8 @@ The bundle exposes typed statistics independently from their presentation. A Boo
 {{ seo_tracking_statistics() }}
 ```
 
+Reports expose typed rankings and exact-match filters for application-defined dimensions without relying on database-specific JSON operators.
+
 For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
 
 ## Journey reports

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Zhortein\SeoTrackingBundle\Statistics;
 
 use Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface;
+use Zhortein\SeoTrackingBundle\Statistics\DTO\DimensionRankedValue;
+use Zhortein\SeoTrackingBundle\Statistics\DTO\DimensionRanking;
 use Zhortein\SeoTrackingBundle\Statistics\DTO\HitObservation;
 use Zhortein\SeoTrackingBundle\Statistics\DTO\RankedValue;
 use Zhortein\SeoTrackingBundle\Statistics\DTO\StatisticsReport;
@@ -38,6 +40,7 @@ final readonly class StatisticsProvider implements StatisticsProviderInterface
         $routes = [];
         $languages = [];
         $trend = [];
+        $dimensions = [];
 
         foreach ($this->dataSource->observations($filter) as $observation) {
             ++$pageCalls;
@@ -62,6 +65,7 @@ final readonly class StatisticsProvider implements StatisticsProviderInterface
             $this->increment($routes, $observation->route);
             $this->increment($languages, $observation->language);
             $this->incrementTrend($trend, $observation, $filter->timezone);
+            $this->incrementDimensions($dimensions, $observation->dimensions);
         }
 
         sort($durations, SORT_NUMERIC);
@@ -88,7 +92,67 @@ final readonly class StatisticsProvider implements StatisticsProviderInterface
             $this->rank($routes, $limit),
             $this->rank($languages, $limit),
             $this->trend($trend, $filter->timezone),
+            $this->dimensionRankings($dimensions, $limit),
         );
+    }
+
+    /**
+     * @param array<string, array<string, array{value: string|int|float|bool, count: int}>> $values
+     * @param array<string, string|int|float|bool>                                         $dimensions
+     */
+    private function incrementDimensions(array &$values, array $dimensions): void
+    {
+        foreach ($dimensions as $name => $value) {
+            if ('' === trim($name) || (is_float($value) && !is_finite($value))) {
+                continue;
+            }
+
+            $key = $this->dimensionValueKey($value);
+            $values[$name][$key] ??= ['value' => $value, 'count' => 0];
+            ++$values[$name][$key]['count'];
+        }
+    }
+
+    private function dimensionValueKey(string|int|float|bool $value): string
+    {
+        return match (true) {
+            is_string($value) => 'string:'.$value,
+            is_int($value) => 'integer:'.$value,
+            is_float($value) => 'float:'.serialize($value),
+            default => 'boolean:'.($value ? 'true' : 'false'),
+        };
+    }
+
+    /**
+     * @param array<string, array<string, array{value: string|int|float|bool, count: int}>> $dimensions
+     *
+     * @return list<DimensionRanking>
+     */
+    private function dimensionRankings(array $dimensions, int $limit): array
+    {
+        uksort($dimensions, static fn (string $left, string $right): int => strnatcasecmp($left, $right));
+        $rankings = [];
+
+        foreach ($dimensions as $name => $values) {
+            uasort($values, static function (array $left, array $right): int {
+                $byCount = $right['count'] <=> $left['count'];
+                if (0 !== $byCount) {
+                    return $byCount;
+                }
+
+                $byLabel = strnatcasecmp((string) $left['value'], (string) $right['value']);
+
+                return 0 !== $byLabel ? $byLabel : strcmp(serialize($left['value']), serialize($right['value']));
+            });
+
+            $ranked = [];
+            foreach (array_slice($values, 0, $limit, true) as $value) {
+                $ranked[] = new DimensionRankedValue($value['value'], $value['count']);
+            }
+            $rankings[] = new DimensionRanking($name, $ranked);
+        }
+
+        return $rankings;
     }
 
     /**
