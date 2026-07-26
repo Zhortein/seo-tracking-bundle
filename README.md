@@ -70,6 +70,15 @@ An explicit canonical URL can be supplied as the second argument:
 <div {{ seo_tracking('article', canonical_url) }}></div>
 ```
 
+Optional application-defined dimensions can be supplied as the third argument:
+
+```twig
+<div {{ seo_tracking('article', canonical_url, {
+    content_category: article.category.slug,
+    plan: current_plan_code
+}) }}></div>
+```
+
 When it is omitted, the Stimulus controller uses the page's `<link rel="canonical">` when present, then falls back to the current URL for grouping.
 
 This will generate:
@@ -100,6 +109,9 @@ Tracked data includes:
 * 🌐 Browser language (navigator.language)
 * 🖥️ Screen size (screen.width and screen.height)
 * ⏱️ Entry and exit timestamps (tracked via JS)
+* 🧩 Optional dimensions explicitly supplied by the application
+
+Dimensions are bounded scalar metadata and are never collected automatically. See [`docs/dimensions.md`](docs/dimensions.md) for accepted values, migration and privacy guidance.
 
 ## ⚙️ How it works
 
@@ -188,6 +200,7 @@ This entity stores information related to a visit (hit) and is related to a Page
 * pageTitle: page title, if provided.
 * delaySincePreviousHit: delay in seconds between current hit and its parent.
 * pageType: page data type, if provided.
+* dimensions: optional, application-defined scalar metadata stored as portable JSON.
 
 > Note: `parentHit` does not introduce a persistent identifier; it links consecutive hits when session storage is available. The consuming application must still assess its use under its own privacy policy and legal context.
 
@@ -349,7 +362,15 @@ The bundle exposes typed statistics independently from their presentation. A Boo
 {{ seo_tracking_statistics() }}
 ```
 
+Reports expose typed rankings and exact-match filters for application-defined dimensions without relying on database-specific JSON operators.
+
 For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
+
+## Journey reports
+
+The typed journey API reconstructs bounded path fragments and transition counts from persisted `parentHit` links. It can include an immediate predecessor outside the selected period to preserve boundary context, while clearly marking that step as outside the filter.
+
+These fragments are not visitors, devices or stable sessions. Retention, consent changes and browser session storage can all start or cut a fragment. See [`docs/journeys.md`](docs/journeys.md) for filter semantics, limits, privacy guidance and data-source replacement.
 
 ## Historical grouping-key backfill
 
@@ -379,15 +400,17 @@ php bin/console zhortein:seo-tracking:purge
 
 The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
 
-## Upgrading to 1.5
+## Upgrading to 1.6
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.5
+composer require zhortein/seo-tracking-bundle:^1.6
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
 php bin/console asset-map:compile
 ```
 
-No Doctrine schema migration is required from 1.4. Rate limiting remains disabled, the invalid-event reporter remains a no-op and existing bot-detector replacements remain supported. Read the [1.5 upgrade procedure](docs/upgrade-1.5.md) before enabling endpoint limits or exporting rejected-request telemetry.
+A nullable Doctrine JSON column is required for dimensions when the default hit entity or `PageCallHitTrait` is used. Existing rows need no backfill. Read the [1.6 upgrade procedure](docs/upgrade-1.6.md) for migration-first deployment, custom entities, verification and rollback.
 
 Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).

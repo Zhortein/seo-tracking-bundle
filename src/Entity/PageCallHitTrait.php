@@ -2,6 +2,7 @@
 
 namespace Zhortein\SeoTrackingBundle\Entity;
 
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 trait PageCallHitTrait
@@ -55,6 +56,12 @@ trait PageCallHitTrait
 
     #[ORM\Column(nullable: true)]
     private ?string $pageType = null;
+
+    /**
+     * @var array<string, string|int|float|bool>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $dimensions = null;
 
     public function updateDuration(): void
     {
@@ -262,6 +269,24 @@ trait PageCallHitTrait
     public function setPageType(?string $pageType): self
     {
         $this->pageType = $pageType;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, string|int|float|bool>|null
+     */
+    public function getDimensions(): ?array
+    {
+        return $this->dimensions;
+    }
+
+    /**
+     * @param array<string, string|int|float|bool>|null $dimensions
+     */
+    public function setDimensions(?array $dimensions): self
+    {
+        $this->dimensions = $dimensions;
 
         return $this;
     }

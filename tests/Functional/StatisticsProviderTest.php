@@ -43,6 +43,16 @@ final class StatisticsProviderTest extends TestCase
                 false,
                 'article',
                 12,
+                ['tenant' => 'acme', 'plan' => 'pro', 'version' => 1],
+            );
+            $this->persistHit(
+                $entityManager,
+                'human-article-other-tenant',
+                new \DateTimeImmutable('2026-07-10 11:00:00 UTC'),
+                false,
+                'article',
+                18,
+                ['tenant' => 'acme', 'plan' => 'free', 'version' => '1'],
             );
             $this->persistHit(
                 $entityManager,
@@ -51,6 +61,7 @@ final class StatisticsProviderTest extends TestCase
                 true,
                 'home',
                 30,
+                [],
             );
             $entityManager->flush();
 
@@ -59,6 +70,7 @@ final class StatisticsProviderTest extends TestCase
                 to: new \DateTimeImmutable('2026-07-10 23:59:59 UTC'),
                 bot: false,
                 pageType: 'article',
+                dimensions: ['tenant' => 'acme', 'version' => 1],
             ));
 
             self::assertSame(1, $report->summary->pageCalls);
@@ -66,11 +78,17 @@ final class StatisticsProviderTest extends TestCase
             self::assertSame(0, $report->summary->robotHits);
             self::assertSame(12.0, $report->summary->averageDurationSeconds);
             self::assertSame('https://example.test/human-article', $report->topPages[0]->label);
+            self::assertSame(['plan', 'tenant', 'version'], array_column($report->dimensions, 'name'));
+            self::assertSame('pro', $report->dimensions[0]->values[0]->value);
+            self::assertSame('integer', $report->dimensions[2]->values[0]->type);
         } finally {
             $kernel->shutdown();
         }
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $dimensions
+     */
     private function persistHit(
         EntityManagerInterface $entityManager,
         string $slug,
@@ -78,6 +96,7 @@ final class StatisticsProviderTest extends TestCase
         bool $bot,
         string $pageType,
         int $duration,
+        array $dimensions,
     ): void {
         $pageCall = (new PageCall())
             ->setUrl('https://example.test/'.$slug)
@@ -92,6 +111,7 @@ final class StatisticsProviderTest extends TestCase
             ->setExitedAt($calledAt->modify(sprintf('+%d seconds', $duration)))
             ->setPageType($pageType)
             ->setLanguage('en')
+            ->setDimensions($dimensions)
             ->setBot($bot);
 
         $entityManager->persist($pageCall);

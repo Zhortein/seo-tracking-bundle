@@ -108,4 +108,17 @@
             <div class="col-12 col-md-4">{{ statistics.ranking('Languages', report.languages) }}</div>
         </div>
     {% endblock %}
+
+    {% block dimensions %}
+        {% if report.dimensions is not empty %}
+            <h2 class="h5 mb-3">Custom dimensions</h2>
+            <div class="row g-3">
+                {% for dimension in report.dimensions %}
+                    <div class="col-12 col-md-6 col-xl-4">
+                        {{ statistics.ranking('Dimension: ' ~ dimension.name, dimension.values) }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endblock %}
 </section>

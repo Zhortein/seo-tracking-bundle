@@ -20,6 +20,7 @@ The first API exposes only values supported by collected data:
 - top pages;
 - UTM sources, campaigns and media;
 - route, page type and language breakdowns;
+- typed rankings for every custom hit dimension;
 - daily evolution in the requested timezone.
 
 `durationSamples` states how many hits contribute to duration values. Open hits and legacy rows without a usable duration are excluded from average and median calculations.
@@ -49,6 +50,10 @@ final readonly class AnalyticsController
             timezone: new \DateTimeZone('Europe/Paris'),
             bot: false,
             pageType: 'article',
+            dimensions: [
+                'tenant' => 'acme',
+                'plan' => 'pro',
+            ],
         );
 
         $report = $this->statistics->report($filter, limit: 10);
@@ -56,6 +61,7 @@ final readonly class AnalyticsController
         return [
             'pageCalls' => $report->summary->pageCalls,
             'topPages' => $report->topPages,
+            'dimensions' => $report->dimensions,
             'trend' => $report->trend,
         ];
     }
@@ -68,8 +74,13 @@ Filter values:
 - `timezone` controls daily grouping and display;
 - `bot: null` includes all hits, `false` keeps humans, and `true` keeps robots;
 - `pageType` matches the generic page type sent by the tracker.
+- `dimensions` requires every supplied key/value pair to match exactly on a hit.
 
-The ranking limit must be between 1 and 100.
+Dimension filters use the same keys, scalar types and bounds as collection. Matching is type-sensitive: the integer `1`, the float `1.0` and the string `"1"` are distinct. The default Doctrine source applies these matches after portable JSON hydration instead of relying on database-specific JSON operators.
+
+The ranking limit must be between 1 and 100 and applies independently to the values of each dimension. `StatisticsReport::dimensions` contains a list of `DimensionRanking` DTOs; every ranked value exposes its scalar `value`, display `label`, `type` and `count`.
+
+Dimension rankings can expose rare business values. They do not add authorization to a dashboard: restrict report access in the application, and never collect account, email, device or other user identifiers as dimensions.
 
 ## Twig usage
 
@@ -131,11 +142,11 @@ The bundled template can also be overridden at:
 templates/bundles/ZhorteinSeoTrackingBundle/statistics/bootstrap5/report.html.twig
 ```
 
-It defines `summary`, `trend` and `rankings` blocks for targeted overrides.
+It defines `summary`, `trend`, `rankings` and `dimensions` blocks for targeted overrides.
 
 ## Custom entities and data sources
 
-Configured entities using `PageCallTrait` and `PageCallHitTrait` work without extra setup. A custom mapping that deliberately renames or omits the historical fields can replace the data source:
+Configured entities using `PageCallTrait` and `PageCallHitTrait` work without extra setup. For backward compatibility, a custom hit mapping without the optional `dimensions` field still produces reports with empty dimension rankings; a dimension filter matches none of those rows. A custom mapping that deliberately renames or omits other historical fields can replace the data source:
 
 ```yaml
 services:
@@ -145,6 +156,6 @@ services:
         alias: App\Analytics\StatisticsDataSource
 ```
 
-Return `HitObservation` objects after applying the supplied `StatisticsFilter`. The standard provider, DTOs and Twig theme remain reusable.
+Return `HitObservation` objects after applying the supplied `StatisticsFilter`, including all exact dimension matches. Populate the observation's optional `dimensions` argument to expose dimension rankings. The standard provider, DTOs and Twig theme remain reusable.
 
 The default implementation streams Doctrine scalar rows and aggregates them in PHP for database portability. For very large datasets, replace the data source with database-specific pre-aggregation while retaining the public report API.

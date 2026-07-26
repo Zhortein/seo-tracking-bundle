@@ -44,7 +44,7 @@ final class CustomEntityControllerTest extends TestCase
             ]);
 
             $response = $controller->track(
-                new Request(content: '{"url":"https://example.test/custom"}'),
+                new Request(content: '{"url":"https://example.test/custom","dimensions":{"tenant":"custom"}}'),
                 $entityManager,
                 $dispatcher,
             );
@@ -52,6 +52,9 @@ final class CustomEntityControllerTest extends TestCase
             self::assertSame(200, $response->getStatusCode(), (string) $response->getContent());
             self::assertSame(1, $entityManager->getRepository(CustomPageCall::class)->count([]));
             self::assertSame(1, $entityManager->getRepository(CustomPageCallHit::class)->count([]));
+            $hit = $entityManager->getRepository(CustomPageCallHit::class)->findOneBy([]);
+            self::assertInstanceOf(CustomPageCallHit::class, $hit);
+            self::assertSame(['tenant' => 'custom'], $hit->getDimensions());
             self::assertSame(1, $statistics->report()->summary->pageCalls);
         } finally {
             $kernel->shutdown();

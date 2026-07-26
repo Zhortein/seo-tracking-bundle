@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Attribute\AsTwigFunction;
 use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
+use Zhortein\SeoTrackingBundle\Tracking\Dimension\TrackingDimensionNormalizer;
 
 final readonly class SeoTrackingExtension
 {
@@ -24,12 +25,19 @@ final readonly class SeoTrackingExtension
         private ?TrackingConsentCheckerInterface $consentChecker = null,
         private string $consentGrantEvent = self::DEFAULT_CONSENT_GRANT_EVENT,
         private string $consentRevokeEvent = self::DEFAULT_CONSENT_REVOKE_EVENT,
+        private ?TrackingDimensionNormalizer $dimensionNormalizer = null,
     ) {
     }
 
+    /**
+     * @param array<string, string|int|float|bool> $dimensions
+     */
     #[AsTwigFunction(name: 'seo_tracking', isSafe: ['html'])]
-    public function seoTracking(string $type = 'generic', ?string $canonicalUrl = null): string
-    {
+    public function seoTracking(
+        string $type = 'generic',
+        ?string $canonicalUrl = null,
+        array $dimensions = [],
+    ): string {
         $request = $this->requestStack->getMainRequest();
         $route = $request?->attributes->get('_route', '');
         $routeArgs = $request?->attributes->get('_route_params', '{}');
@@ -50,6 +58,7 @@ final readonly class SeoTrackingExtension
             'consent-granted' => $this->consentChecker?->isGranted($request) ?? true,
             'consent-grant-event' => $this->consentGrantEvent,
             'consent-revoke-event' => $this->consentRevokeEvent,
+            'dimensions' => ($this->dimensionNormalizer ?? new TrackingDimensionNormalizer())->normalize($dimensions) ?? [],
         ];
 
         foreach ($data as $key => $value) {

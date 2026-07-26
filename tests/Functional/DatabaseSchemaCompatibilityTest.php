@@ -18,6 +18,9 @@ use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger;
 use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPurgeOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
+use Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
 
 final class DatabaseSchemaCompatibilityTest extends TestCase
@@ -38,11 +41,15 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $dispatcher = $container->get(EventDispatcherInterface::class);
             $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
             $purger = $container->get(HitRetentionPurger::class);
+            $journeys = $container->get('test.journey_provider');
+            $statistics = $container->get('test.statistics_provider');
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
             self::assertInstanceOf(HistoricalGroupingKeyBackfiller::class, $backfiller);
             self::assertInstanceOf(HitRetentionPurger::class, $purger);
+            self::assertInstanceOf(JourneyProviderInterface::class, $journeys);
+            self::assertInstanceOf(StatisticsProviderInterface::class, $statistics);
 
             $metadata = [
                 $entityManager->getClassMetadata(PageCall::class),
@@ -51,14 +58,34 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $schemaTool = new SchemaTool($entityManager);
             $schemaTool->createSchema($metadata);
 
-            $request = new Request(content: '{"url":"https://example.test/database"}');
+            $request = new Request(content: '{"url":"https://example.test/database","dimensions":{"tenant":"demo"}}');
             $first = $controller->track($request, $entityManager, $dispatcher);
-            $second = $controller->track($request, $entityManager, $dispatcher);
+            $firstData = json_decode((string) $first->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertIsArray($firstData);
+            $second = $controller->track(
+                new Request(content: json_encode([
+                    'url' => 'https://example.test/database',
+                    'parentHitId' => $firstData['hitId'],
+                ], JSON_THROW_ON_ERROR)),
+                $entityManager,
+                $dispatcher,
+            );
 
             self::assertSame(200, $first->getStatusCode(), (string) $first->getContent());
             self::assertSame(200, $second->getStatusCode(), (string) $second->getContent());
             self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
             self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+            $firstHit = $entityManager->getRepository(PageCallHit::class)->find($firstData['hitId']);
+            self::assertInstanceOf(PageCallHit::class, $firstHit);
+            self::assertSame(['tenant' => 'demo'], $firstHit->getDimensions());
+            $journeyReport = $journeys->report();
+            self::assertSame(2, $journeyReport->summary->observedHits);
+            self::assertSame(1, $journeyReport->summary->linkedHits);
+            self::assertCount(1, $journeyReport->topTransitions);
+            $statisticsReport = $statistics->report(new StatisticsFilter(dimensions: ['tenant' => 'demo']));
+            self::assertSame(1, $statisticsReport->summary->pageCalls);
+            self::assertSame('tenant', $statisticsReport->dimensions[0]->name);
+            self::assertSame('demo', $statisticsReport->dimensions[0]->values[0]->value);
 
             $historical = (new PageCall())
                 ->setUrl('https://example.test/database')

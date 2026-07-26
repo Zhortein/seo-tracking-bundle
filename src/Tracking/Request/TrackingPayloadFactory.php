@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Zhortein\SeoTrackingBundle\Tracking\Request;
 
 use Symfony\Component\HttpFoundation\Request;
+use Zhortein\SeoTrackingBundle\Tracking\Dimension\TrackingDimensionNormalizer;
 
 final readonly class TrackingPayloadFactory
 {
+    public function __construct(private ?TrackingDimensionNormalizer $dimensionNormalizer = null)
+    {
+    }
+
     public function fromRequest(Request $request): TrackingPayload
     {
         $content = $request->getContent();
@@ -43,6 +48,7 @@ final readonly class TrackingPayloadFactory
             $this->optionalIdentifier($data, 'parentHitId'),
             $this->optionalString($data, 'title', 255),
             $this->optionalString($data, 'type', 255),
+            ($this->dimensionNormalizer ?? new TrackingDimensionNormalizer())->normalize($data['dimensions'] ?? null),
         );
     }
 
