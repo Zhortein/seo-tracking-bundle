@@ -146,7 +146,7 @@ It defines `summary`, `trend`, `rankings` and `dimensions` blocks for targeted o
 
 ## Custom entities and data sources
 
-Configured entities using `PageCallTrait` and `PageCallHitTrait` work without extra setup. A custom mapping that deliberately renames or omits the historical fields can replace the data source:
+Configured entities using `PageCallTrait` and `PageCallHitTrait` work without extra setup. For backward compatibility, a custom hit mapping without the optional `dimensions` field still produces reports with empty dimension rankings; a dimension filter matches none of those rows. A custom mapping that deliberately renames or omits other historical fields can replace the data source:
 
 ```yaml
 services:
