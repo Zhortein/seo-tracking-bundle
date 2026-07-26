@@ -1,6 +1,6 @@
 # Roadmap for SeoTrackingBundle
 
-This file lists improvements deliberately left outside the 1.4 release. Items are exploratory unless they are attached to a GitHub milestone.
+This file lists improvements deliberately left outside the 1.5 release. Items are exploratory unless they are attached to a GitHub milestone.
 
 The bundle must remain generic: application-specific behavior belongs in configuration, replaceable services, events or overrideable templates.
 
@@ -8,9 +8,6 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 ## Tracking
 
-- Configurable Symfony RateLimiter integration for public tracking endpoints.
-- Extensible bot classification beyond the deliberately small default detector.
-- Optional error or invalid-event tracking through a separate, documented contract.
 - Visitor-flow reports based on `parentHit`, with clear expiry and privacy semantics. No “unique visitor” metric should be introduced without a reliable identity model and documented consent implications.
 - Optional structured metadata for application-defined dimensions, with portable Doctrine mapping considered before platform-specific JSON features.
 
@@ -25,6 +22,13 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 - Expand database CI when a platform can be supported continuously.
 - Review Symfony 7.3 support separately once its ecosystem constraints no longer permit a secure dependency set.
+
+## Delivered in 1.5
+
+- Optional, independently configurable Symfony RateLimiter policies for hit creation and closure.
+- Hashed default client-IP limiter keys with a replaceable key resolver and complete policy contract.
+- Typed, replaceable bot classification with explainable default categories and legacy detector compatibility.
+- Separate invalid-event reporting with stable reasons, bounded safe metadata and a no-op default.
 
 ## Delivered in 1.4
 
