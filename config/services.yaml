@@ -42,6 +42,11 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
 
+    Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
+        arguments:
+            $trackingUrl: '%zhortein_seo_tracking.tracking_url%'
+            $exitUrl: '%zhortein_seo_tracking.exit_url%'
+
     # Configuration spécifique pour ton DataCollector
     Zhortein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector:
         tags:

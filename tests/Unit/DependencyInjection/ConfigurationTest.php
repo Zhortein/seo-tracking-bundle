@@ -25,5 +25,7 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($anonymization);
         self::assertSame(24, $anonymization['ipv4_prefix']);
         self::assertSame(64, $anonymization['ipv6_prefix']);
+        self::assertNull($config['tracking_url']);
+        self::assertNull($config['exit_url']);
     }
 }

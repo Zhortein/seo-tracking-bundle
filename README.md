@@ -53,6 +53,14 @@ Instead of writing the `stimulus_controller(...)` call manually, you can use the
 <div {{ seo_tracking('home') }}></div>
 ```
 
+An explicit canonical URL can be supplied as the second argument:
+
+```twig
+<div {{ seo_tracking('article', canonical_url) }}></div>
+```
+
+When it is omitted, the Stimulus controller uses the page's `<link rel="canonical">` when present, then falls back to the current URL for grouping.
+
 This will generate:
 
 ```html
@@ -84,10 +92,13 @@ Tracked data includes:
 
 ## ⚙️ How it works
 
-1. On page load, a fetch() request is sent to the tracking endpoint.
+1. On page load, a `fetch()` request is sent to the tracking endpoint.
 2. The server stores a new PageCall and a new PageCallHit.
-3. A listener is added to the page to detect page exit.
-4. On page unload (tab close, navigation), a fetch() request is sent to update the exitedAt timestamp and calculate the duration.
+3. Stimulus registers visibility, page-hide and Turbo lifecycle listeners once.
+4. On page exit or a Turbo page change, `sendBeacon()` closes the hit. A keepalive `fetch()` is used when beacons are unavailable.
+5. Returning to a hidden page starts a fresh hit, linked to the previous one when session storage is available.
+
+If JavaScript or `fetch()` is unavailable, the page continues normally and no client-side hit is created.
 
 ## ⚠️ Notes & Best Practices
 
@@ -276,7 +287,19 @@ zhortein_seo_tracking:
 
 For a different policy, decorate or replace `Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizerInterface`.
 
+## Tracking endpoint URLs
+
+By default, the Twig helper generates URLs from the bundle routes, so an application-level route prefix is respected. Explicit URLs can be configured for a reverse proxy, another host or a custom controller:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    tracking_url: '/analytics/page'
+    exit_url: '/analytics/page/exit'
+```
+
+The values are passed to Stimulus as `trackingUrl` and `exitUrl`. Applications calling `stimulus_controller()` directly can provide the same values without changing the distributed controller.
+
 ## Upgrading to 1.3
 
 The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
-
