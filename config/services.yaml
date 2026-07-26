@@ -47,6 +47,21 @@ services:
             $trackingUrl: '%zhortein_seo_tracking.tracking_url%'
             $exitUrl: '%zhortein_seo_tracking.exit_url%'
 
+    Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource:
+        arguments:
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource
+
+    Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\StatisticsProvider
+
+    Zhortein\SeoTrackingBundle\Statistics\Twig\StatisticsRuntime:
+        arguments:
+            $defaultTemplate: '%zhortein_seo_tracking.statistics.template%'
+        tags: ['twig.runtime']
+
     # Configuration spécifique pour ton DataCollector
     Zhortein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector:
         tags:

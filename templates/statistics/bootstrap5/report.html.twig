@@ -1,0 +1,111 @@
+{% macro ranking(title, values) %}
+    <div class="card h-100">
+        <div class="card-header">{{ title }}</div>
+        <div class="list-group list-group-flush">
+            {% for value in values %}
+                <div class="list-group-item d-flex justify-content-between gap-3">
+                    <span class="text-break">{{ value.label }}</span>
+                    <span class="badge text-bg-secondary rounded-pill">{{ value.count }}</span>
+                </div>
+            {% else %}
+                <div class="list-group-item text-body-secondary">No data</div>
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% import _self as statistics %}
+
+<section class="seo-tracking-statistics" data-seo-tracking-statistics>
+    {% block summary %}
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-body-secondary small">Page calls</div>
+                        <div class="fs-3 fw-semibold">{{ report.summary.pageCalls }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-body-secondary small">Human hits</div>
+                        <div class="fs-3 fw-semibold">{{ report.summary.humanHits }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-body-secondary small">Robot hits</div>
+                        <div class="fs-3 fw-semibold">{{ report.summary.robotHits }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-body-secondary small">Average duration</div>
+                        <div class="fs-3 fw-semibold">
+                            {{ report.summary.averageDurationSeconds is null ? '—' : report.summary.averageDurationSeconds|number_format(1) ~ ' s' }}
+                        </div>
+                        <div class="small text-body-secondary">{{ report.summary.durationSamples }} closed hits</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="text-body-secondary small">Median duration</div>
+                        <div class="fs-3 fw-semibold">
+                            {{ report.summary.medianDurationSeconds is null ? '—' : report.summary.medianDurationSeconds|number_format(1) ~ ' s' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block trend %}
+        <div class="card mb-4">
+            <div class="card-header">Evolution</div>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col" class="text-end">Page calls</th>
+                            <th scope="col" class="text-end">Humans</th>
+                            <th scope="col" class="text-end">Robots</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for point in report.trend %}
+                            <tr>
+                                <th scope="row">{{ point.date|date('Y-m-d', report.filter.timezone.name) }}</th>
+                                <td class="text-end">{{ point.hits }}</td>
+                                <td class="text-end">{{ point.humanHits }}</td>
+                                <td class="text-end">{{ point.robotHits }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-center text-body-secondary">No data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block rankings %}
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-lg-6">{{ statistics.ranking('Top pages', report.topPages) }}</div>
+            <div class="col-12 col-lg-6">{{ statistics.ranking('Routes', report.routes) }}</div>
+            <div class="col-12 col-md-4">{{ statistics.ranking('UTM sources', report.sources) }}</div>
+            <div class="col-12 col-md-4">{{ statistics.ranking('UTM campaigns', report.campaigns) }}</div>
+            <div class="col-12 col-md-4">{{ statistics.ranking('UTM media', report.mediums) }}</div>
+            <div class="col-12 col-md-4">{{ statistics.ranking('Page types', report.pageTypes) }}</div>
+            <div class="col-12 col-md-4">{{ statistics.ranking('Languages', report.languages) }}</div>
+        </div>
+    {% endblock %}
+</section>

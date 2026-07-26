@@ -47,6 +47,7 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $container->setParameter('zhortein_seo_tracking.anonymization.ipv6_prefix', $ipv6Prefix);
         $container->setParameter('zhortein_seo_tracking.tracking_url', $this->optionalString($config['tracking_url'] ?? null, 'tracking_url'));
         $container->setParameter('zhortein_seo_tracking.exit_url', $this->optionalString($config['exit_url'] ?? null, 'exit_url'));
+        $container->setParameter('zhortein_seo_tracking.statistics.template', $this->statisticsTemplate($config['statistics'] ?? null));
 
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
@@ -139,5 +140,25 @@ YAML);
         }
 
         throw new \LogicException(sprintf('The "%s" option must be a string or null.', $option));
+    }
+
+    private function statisticsTemplate(mixed $statistics): ?string
+    {
+        if (!is_array($statistics)) {
+            throw new \LogicException('The "statistics" option must be an array.');
+        }
+
+        $template = $statistics['template'] ?? null;
+        if (null !== $template) {
+            if (!is_string($template) || '' === trim($template)) {
+                throw new \LogicException('The "statistics.template" option must be a non-empty string or null.');
+            }
+
+            return $template;
+        }
+
+        return 'bootstrap5' === ($statistics['theme'] ?? null)
+            ? '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig'
+            : null;
     }
 }

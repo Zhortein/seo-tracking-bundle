@@ -300,6 +300,16 @@ zhortein_seo_tracking:
 
 The values are passed to Stimulus as `trackingUrl` and `exitUrl`. Applications calling `stimulus_controller()` directly can provide the same values without changing the distributed controller.
 
+## Statistics API and Twig rendering
+
+The bundle exposes typed statistics independently from their presentation. A Bootstrap 5 theme is enabled by default, but Bootstrap is not a runtime dependency:
+
+```twig
+{{ seo_tracking_statistics() }}
+```
+
+For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
+
 ## Upgrading to 1.3
 
 The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
