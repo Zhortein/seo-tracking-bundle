@@ -22,7 +22,10 @@ final class SeoTrackingExtensionTest extends TestCase
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
-        $attributes = (new SeoTrackingExtension($requestStack))->seoTracking('article');
+        $attributes = (new SeoTrackingExtension($requestStack))->seoTracking('article', dimensions: [
+            'plan' => 'professional',
+            'authenticated' => true,
+        ]);
 
         self::assertStringContainsString('data-controller="zhortein--seo-tracking-bundle--tracking"', $attributes);
         self::assertStringContainsString('article_show', $attributes);
@@ -32,6 +35,7 @@ final class SeoTrackingExtensionTest extends TestCase
         self::assertStringContainsString('tracking-exit-url-value="/zhortein/seo-tracking/page-call/exit"', $attributes);
         self::assertStringContainsString('tracking-consent-granted-value="true"', $attributes);
         self::assertStringContainsString('tracking-consent-grant-event-value="seo-tracking:consent-granted"', $attributes);
+        self::assertStringContainsString('tracking-dimensions-value="{&quot;authenticated&quot;:true,&quot;plan&quot;:&quot;professional&quot;}"', $attributes);
     }
 
     public function testEndpointsFollowMountedRoutesAndCanBeOverridden(): void
@@ -80,5 +84,14 @@ final class SeoTrackingExtensionTest extends TestCase
         self::assertStringContainsString('tracking-consent-granted-value="false"', $attributes);
         self::assertStringContainsString('tracking-consent-grant-event-value="cmp:analytics-granted"', $attributes);
         self::assertStringContainsString('tracking-consent-revoke-event-value="cmp:analytics-revoked"', $attributes);
+    }
+
+    public function testInvalidDimensionsFailBeforeRendering(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new SeoTrackingExtension(new RequestStack()))->seoTracking(dimensions: [
+            'personal data' => 'not allowed',
+        ]);
     }
 }

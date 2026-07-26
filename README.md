@@ -70,6 +70,15 @@ An explicit canonical URL can be supplied as the second argument:
 <div {{ seo_tracking('article', canonical_url) }}></div>
 ```
 
+Optional application-defined dimensions can be supplied as the third argument:
+
+```twig
+<div {{ seo_tracking('article', canonical_url, {
+    content_category: article.category.slug,
+    plan: current_plan_code
+}) }}></div>
+```
+
 When it is omitted, the Stimulus controller uses the page's `<link rel="canonical">` when present, then falls back to the current URL for grouping.
 
 This will generate:
@@ -100,6 +109,9 @@ Tracked data includes:
 * 🌐 Browser language (navigator.language)
 * 🖥️ Screen size (screen.width and screen.height)
 * ⏱️ Entry and exit timestamps (tracked via JS)
+* 🧩 Optional dimensions explicitly supplied by the application
+
+Dimensions are bounded scalar metadata and are never collected automatically. See [`docs/dimensions.md`](docs/dimensions.md) for accepted values, migration and privacy guidance.
 
 ## ⚙️ How it works
 
@@ -188,6 +200,7 @@ This entity stores information related to a visit (hit) and is related to a Page
 * pageTitle: page title, if provided.
 * delaySincePreviousHit: delay in seconds between current hit and its parent.
 * pageType: page data type, if provided.
+* dimensions: optional, application-defined scalar metadata stored as portable JSON.
 
 > Note: `parentHit` does not introduce a persistent identifier; it links consecutive hits when session storage is available. The consuming application must still assess its use under its own privacy policy and legal context.
 

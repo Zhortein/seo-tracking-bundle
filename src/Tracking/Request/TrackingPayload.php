@@ -8,6 +8,7 @@ final readonly class TrackingPayload
 {
     /**
      * @param array<string, mixed>|null $routeArgs
+     * @param array<string, string|int|float|bool>|null $dimensions
      */
     public function __construct(
         public string $url,
@@ -25,6 +26,7 @@ final readonly class TrackingPayload
         public int|string|null $parentHitId,
         public ?string $title,
         public ?string $type,
+        public ?array $dimensions = null,
     ) {
     }
 

@@ -96,6 +96,40 @@ final class PageCallControllerTest extends TestCase
         self::assertSame('https://example.test/article?variant=one', $hit->getUrl());
     }
 
+    public function testExplicitDimensionsAreNormalizedAndStoredOnTheHit(): void
+    {
+        $response = $this->track([
+            'url' => 'https://example.test/pricing',
+            'dimensions' => [
+                'plan' => 'professional',
+                'authenticated' => true,
+                'category_id' => 12,
+            ],
+        ]);
+
+        self::assertSame(200, $response->getStatusCode());
+        $hit = $this->entityManager->getRepository(PageCallHit::class)->findOneBy([]);
+        self::assertInstanceOf(PageCallHit::class, $hit);
+        self::assertSame([
+            'authenticated' => true,
+            'category_id' => 12,
+            'plan' => 'professional',
+        ], $hit->getDimensions());
+    }
+
+    public function testInvalidDimensionsRejectTheWholeHit(): void
+    {
+        $response = $this->track([
+            'url' => 'https://example.test/pricing',
+            'dimensions' => [
+                'customer' => ['email' => 'not-collected@example.test'],
+            ],
+        ]);
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame(0, $this->entityManager->getRepository(PageCallHit::class)->count([]));
+    }
+
     public function testMalformedJsonAndInvalidFieldsReturnBadRequest(): void
     {
         $malformed = $this->controller->track(

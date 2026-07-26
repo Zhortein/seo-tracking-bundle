@@ -54,7 +54,7 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $schemaTool = new SchemaTool($entityManager);
             $schemaTool->createSchema($metadata);
 
-            $request = new Request(content: '{"url":"https://example.test/database"}');
+            $request = new Request(content: '{"url":"https://example.test/database","dimensions":{"tenant":"demo"}}');
             $first = $controller->track($request, $entityManager, $dispatcher);
             $firstData = json_decode((string) $first->getContent(), true, 512, JSON_THROW_ON_ERROR);
             self::assertIsArray($firstData);
@@ -71,6 +71,9 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             self::assertSame(200, $second->getStatusCode(), (string) $second->getContent());
             self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
             self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+            $firstHit = $entityManager->getRepository(PageCallHit::class)->find($firstData['hitId']);
+            self::assertInstanceOf(PageCallHit::class, $firstHit);
+            self::assertSame(['tenant' => 'demo'], $firstHit->getDimensions());
             $journeyReport = $journeys->report();
             self::assertSame(2, $journeyReport->summary->observedHits);
             self::assertSame(1, $journeyReport->summary->linkedHits);
