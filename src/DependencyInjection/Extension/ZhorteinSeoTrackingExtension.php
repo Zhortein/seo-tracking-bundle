@@ -237,9 +237,7 @@ YAML);
         }
 
         if (!interface_exists(RateLimiterFactoryInterface::class)) {
-            throw new \LogicException(
-                'The optional tracking rate limiter integration requires symfony/rate-limiter.',
-            );
+            throw new \LogicException('The optional tracking rate limiter integration requires symfony/rate-limiter.');
         }
 
         $container->setDefinition(SymfonyTrackingRateLimiter::class, new Definition(

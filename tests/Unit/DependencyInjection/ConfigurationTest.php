@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Zhortein\SeoTrackingBundle\Tests\Unit\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\Processor;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
