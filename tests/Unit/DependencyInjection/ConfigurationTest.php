@@ -14,6 +14,13 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
 
 final class ConfigurationTest extends TestCase
 {
+    public function testTreeRootMatchesTheExtensionAlias(): void
+    {
+        $tree = (new Configuration())->getConfigTreeBuilder()->buildTree();
+
+        self::assertSame('zhortein_seo_tracking', $tree->getName());
+    }
+
     public function testDefaultsRemainBackwardCompatible(): void
     {
         $config = (new Processor())->processConfiguration(new Configuration(), []);
@@ -22,7 +29,10 @@ final class ConfigurationTest extends TestCase
         self::assertSame(PageCallHit::class, $config['page_call_hit_class']);
         self::assertFalse($config['easylyse_enabled']);
         self::assertSame('', $config['easylyse_api_key']);
+        self::assertSame('https://www.easylyse.fr/fr/api/seo/hit', $config['easylyse_api_page_call_endpoint']);
+        self::assertSame('https://www.easylyse.fr/fr/api/seo/exit', $config['easylyse_api_page_exit_endpoint']);
         self::assertSame(300, $config['easylyse_timeout']);
+        self::assertFalse($config['auto_send']);
         $anonymization = $config['anonymization'];
         self::assertIsArray($anonymization);
         self::assertSame(24, $anonymization['ipv4_prefix']);
