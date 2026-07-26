@@ -1,0 +1,5 @@
+{
+  "version": "1.7.0",
+  "milestone_description": "Bounded statistics navigation, opt-in report caching, safe streaming exports and accessible translated presentation.",
+  "issues": [62, 63, 64, 65]
+}
