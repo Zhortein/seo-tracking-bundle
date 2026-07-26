@@ -1,6 +1,6 @@
 # Roadmap for SeoTrackingBundle
 
-This file lists improvements deliberately left outside the 1.6 release. Items are exploratory unless they are attached to a GitHub milestone.
+This file lists improvements deliberately left outside the 1.7 release. Items are exploratory unless they are attached to a GitHub milestone.
 
 The bundle must remain generic: application-specific behavior belongs in configuration, replaceable services, events or overrideable templates.
 
@@ -13,15 +13,22 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 ## Statistics and presentation
 
-- Cache and pagination policies for large datasets.
 - Optional pre-aggregated storage for high-volume installations.
-- Additional presentation themes and lightweight charts without making a frontend framework mandatory.
-- Export adapters for CSV or external analytics systems.
+- Database-native cursor implementations for installations where deep offset pagination is insufficient.
+- Application-owned adapters for non-CSV external analytics systems.
 
 ## Compatibility
 
 - Expand database CI when a platform can be supported continuously.
 - Review Symfony 7.3 support separately once its ecosystem constraints no longer permit a secure dependency set.
+
+## Delivered in 1.7
+
+- Bounded filtered observation pagination with a replaceable browser contract.
+- Opt-in, fail-open PSR-6 caching for repeated aggregate statistics reports.
+- Lazy, formula-safe UTF-8 CSV exports over the same exact typed filters.
+- A dependency-free semantic HTML5 theme alongside the backward-compatible Bootstrap 5 default.
+- English and French presentation catalogs, accessible proportional visuals and exact tabular equivalents.
 
 ## Delivered in 1.6
 

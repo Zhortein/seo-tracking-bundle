@@ -400,20 +400,18 @@ php bin/console zhortein:seo-tracking:purge
 
 The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
 
-## Upgrading to 1.6
+## Upgrading to 1.7
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.6
-php bin/console make:migration
-php bin/console doctrine:migrations:migrate
+composer require zhortein/seo-tracking-bundle:^1.7
 php bin/console asset-map:compile
 ```
 
-A nullable Doctrine JSON column is required for dimensions when the default hit entity or `PageCallHitTrait` is used. Existing rows need no backfill. Read the [1.6 upgrade procedure](docs/upgrade-1.6.md) for migration-first deployment, custom entities, verification and rollback.
+Version 1.7 requires no Doctrine migration and keeps report caching disabled by default. Read the [1.7 upgrade procedure](docs/upgrade-1.7.md) for opt-in adoption, verification and rollback.
 
-Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).
+Applications upgrading from a release before 1.6 must first follow the applicable [1.3](docs/upgrade-1.3.md) and [1.6](docs/upgrade-1.6.md) schema procedures.
 
 For large administrative listings and repeated reports, see [statistics pagination and cache](docs/statistics-performance.md). Both features are opt-in at the application boundary; report caching remains disabled unless a PSR-6 pool and TTL are configured.
 

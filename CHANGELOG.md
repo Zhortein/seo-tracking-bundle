@@ -10,6 +10,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.7.0] – 2026-07-26
+
+### Added
+
+- A bounded, replaceable observation browser for filtered administrative listings, with explicit offset and page-size limits.
+- Disabled-by-default PSR-6 statistics report caching with deterministic, type-sensitive keys and fail-open backend handling.
+- A lazy UTF-8 CSV statistics exporter with a stable schema, configurable dialect and spreadsheet-formula protection.
+- A framework-neutral semantic HTML5 statistics theme without CSS, JavaScript or remote assets.
+- English and French translation catalogs for the bundled statistics presentation.
+- Accessible proportional visuals with exact textual counts and complete daily trend tables.
+- Documentation and functional coverage for pagination, cache policy, exports, authorization, presentation overrides and rollback.
+
+### Changed
+
+- The default Bootstrap 5 statistics theme now uses translated labels and supplements rankings and trends with bounded proportional visuals.
+- Aggregate reports can be cached only when applications explicitly configure both a pool and a positive TTL.
+- Pagination, exports and aggregate reports share the same typed, exact `StatisticsFilter` semantics.
+- Bundled presentation keeps stable `summary`, `trend`, `rankings` and `dimensions` Twig blocks across both themes.
+
+### Migration
+
+- No Doctrine schema migration is required. PSR cache interfaces are installed automatically, while report caching remains disabled unless configured. See [`docs/upgrade-1.7.md`](docs/upgrade-1.7.md).
+
+---
+
 ## [1.6.0] – 2026-07-26
 
 ### Added
