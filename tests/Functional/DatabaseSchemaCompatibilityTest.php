@@ -12,6 +12,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Controller\PageCallController;
+use Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\GroupingBackfillOptions;
+use Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\HistoricalGroupingKeyBackfiller;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
@@ -32,9 +34,11 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $entityManager = $container->get(EntityManagerInterface::class);
             $controller = $container->get(PageCallController::class);
             $dispatcher = $container->get(EventDispatcherInterface::class);
+            $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
+            self::assertInstanceOf(HistoricalGroupingKeyBackfiller::class, $backfiller);
 
             $metadata = [
                 $entityManager->getClassMetadata(PageCall::class),
@@ -51,6 +55,32 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             self::assertSame(200, $second->getStatusCode(), (string) $second->getContent());
             self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
             self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+
+            $historical = (new PageCall())
+                ->setUrl('https://example.test/database')
+                ->setRoute(null)
+                ->setRouteArgs(null)
+                ->setCampaign(null)
+                ->setMedium(null)
+                ->setSource(null)
+                ->setTerm(null)
+                ->setContent(null)
+                ->setNbCalls(1)
+                ->setFirstCalledAt(new \DateTimeImmutable('2025-01-01'))
+                ->setLastCalledAt(new \DateTime('2025-01-01'))
+                ->setBot(false);
+            $historicalHit = (new PageCallHit())
+                ->setPageCall($historical)
+                ->setCalledAt(new \DateTimeImmutable('2025-01-01'))
+                ->setBot(false);
+            $entityManager->persist($historical);
+            $entityManager->persist($historicalHit);
+            $entityManager->flush();
+
+            $result = $backfiller->run(new GroupingBackfillOptions(true, true, 1));
+            self::assertSame(1, $result->merged);
+            self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
+            self::assertSame(3, $entityManager->getRepository(PageCallHit::class)->count([]));
         } finally {
             if ($schemaTool instanceof SchemaTool && [] !== $metadata) {
                 $schemaTool->dropSchema($metadata);

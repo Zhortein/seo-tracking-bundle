@@ -31,6 +31,17 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGeneratorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGenerator
 
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\HistoricalGroupingKeyBackfiller:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DefaultEntityDuplicatePageCallMerger:
+        arguments:
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DuplicatePageCallMergerInterface:
+        alias: Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DefaultEntityDuplicatePageCallMerger
+
     Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer:
         arguments:
             $ipv4Prefix: '%zhortein_seo_tracking.anonymization.ipv4_prefix%'
