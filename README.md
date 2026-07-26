@@ -418,3 +418,5 @@ Applications upgrading from an older release must first follow the [1.3 schema m
 For large administrative listings and repeated reports, see [statistics pagination and cache](docs/statistics-performance.md). Both features are opt-in at the application boundary; report caching remains disabled unless a PSR-6 pool and TTL are configured.
 
 Filtered observations can also be exported through the lazy, spreadsheet-safe [streaming CSV API](docs/statistics-export.md). The application remains responsible for exposing a secured route or forwarding rows to an external analytics system.
+
+Statistics can be rendered with the default Bootstrap 5 theme or the translated, dependency-free [semantic HTML5 theme](docs/statistics-presentation.md). Both keep exact tables alongside lightweight proportional visuals and remain fully overrideable.

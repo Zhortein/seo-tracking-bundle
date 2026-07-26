@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zhortein\SeoTrackingBundle\Tests\Unit\DependencyInjection;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
@@ -115,6 +116,28 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($cache);
         self::assertSame('cache.seo_tracking_statistics', $cache['pool']);
         self::assertSame(120, $cache['ttl']);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function statisticsThemes(): iterable
+    {
+        yield 'Bootstrap 5' => ['bootstrap5'];
+        yield 'framework-neutral HTML5' => ['html5'];
+        yield 'no bundled theme' => ['none'];
+    }
+
+    #[DataProvider('statisticsThemes')]
+    public function testEveryStatisticsThemeCanBeSelected(string $theme): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'statistics' => ['theme' => $theme],
+        ]]);
+
+        $statistics = $config['statistics'];
+        self::assertIsArray($statistics);
+        self::assertSame($theme, $statistics['theme']);
     }
 
     public function testStatisticsCachePoolCannotBeEmpty(): void

@@ -58,7 +58,7 @@ class Configuration implements ConfigurationInterface
                         ->addDefaultsIfNotSet()
                         ->children()
                             ->enumNode('theme')
-                                ->values(['bootstrap5', 'none'])
+                                ->values(['bootstrap5', 'html5', 'none'])
                                 ->defaultValue('bootstrap5')
                             ->end()
                             ->scalarNode('template')->defaultNull()->end()

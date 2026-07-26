@@ -118,6 +118,17 @@ zhortein_seo_tracking:
 
 The theme only emits Bootstrap class names; it does not install Bootstrap or any JavaScript dependency.
 
+Use the framework-neutral semantic HTML theme:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    statistics:
+        theme: html5
+```
+
+The HTML5 theme uses native progress elements and complete tables without loading CSS or JavaScript. Both supplied themes translate their labels through the `seo_tracking` domain and include English and French catalogs.
+
 Use an application template:
 
 ```yaml
@@ -142,7 +153,13 @@ The bundled template can also be overridden at:
 templates/bundles/ZhorteinSeoTrackingBundle/statistics/bootstrap5/report.html.twig
 ```
 
-It defines `summary`, `trend`, `rankings` and `dimensions` blocks for targeted overrides.
+The HTML5 template can be overridden at:
+
+```text
+templates/bundles/ZhorteinSeoTrackingBundle/statistics/html5/report.html.twig
+```
+
+Both templates define `summary`, `trend`, `rankings` and `dimensions` blocks for targeted overrides. Read [accessible statistics presentation](statistics-presentation.md) for visual semantics, translations, zero-count behavior and override guidance.
 
 ## Custom entities and data sources
 

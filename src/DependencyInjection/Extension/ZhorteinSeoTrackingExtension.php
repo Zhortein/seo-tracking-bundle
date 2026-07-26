@@ -175,9 +175,11 @@ YAML);
             return $template;
         }
 
-        return 'bootstrap5' === ($statistics['theme'] ?? null)
-            ? '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig'
-            : null;
+        return match ($statistics['theme'] ?? null) {
+            'bootstrap5' => '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig',
+            'html5' => '@ZhorteinSeoTracking/statistics/html5/report.html.twig',
+            default => null,
+        };
     }
 
     /**
