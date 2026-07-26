@@ -9,6 +9,39 @@ services:
         resource: '../src/'
         exclude: '../src/{DependencyInjection,Entity,Kernel.php}'
 
+    Zhortein\SeoTrackingBundle\Controller\PageCallController:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallFactory:
+        arguments:
+            $className: '%zhortein_seo_tracking.page_call_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallHitFactory:
+        arguments:
+            $className: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallFactory
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallHitFactoryInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Factory\ConfiguredPageCallHitFactory
+
+    Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGeneratorInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGenerator
+
+    Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer:
+        arguments:
+            $ipv4Prefix: '%zhortein_seo_tracking.anonymization.ipv4_prefix%'
+            $ipv6Prefix: '%zhortein_seo_tracking.anonymization.ipv6_prefix%'
+
+    Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizerInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer
+
+    Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
+
     # Configuration spécifique pour ton DataCollector
     Zhortein\SeoTrackingBundle\DataCollector\SeoTrackingDataCollector:
         tags:

@@ -28,6 +28,24 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
+        $pageCallClass = $config['page_call_class'] ?? null;
+        $pageCallHitClass = $config['page_call_hit_class'] ?? null;
+        $anonymization = $config['anonymization'] ?? null;
+        if (!is_string($pageCallClass) || !is_string($pageCallHitClass) || !is_array($anonymization)) {
+            throw new \LogicException('Invalid SEO tracking entity configuration.');
+        }
+
+        $ipv4Prefix = $anonymization['ipv4_prefix'] ?? null;
+        $ipv6Prefix = $anonymization['ipv6_prefix'] ?? null;
+        if (!is_int($ipv4Prefix) || !is_int($ipv6Prefix)) {
+            throw new \LogicException('Invalid SEO tracking anonymization configuration.');
+        }
+
+        $container->setParameter('zhortein_seo_tracking.page_call_class', $pageCallClass);
+        $container->setParameter('zhortein_seo_tracking.page_call_hit_class', $pageCallHitClass);
+        $container->setParameter('zhortein_seo_tracking.anonymization.ipv4_prefix', $ipv4Prefix);
+        $container->setParameter('zhortein_seo_tracking.anonymization.ipv6_prefix', $ipv6Prefix);
+
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
             $config['easylyse_api_page_exit_endpoint'] ?? null,

@@ -11,7 +11,7 @@ Symfony bundle to track page views, UTM campaigns and basic engagement, with opt
 composer require zhortein/seo-tracking-bundle
 ```
 
-Symfony 6.3+ and 7.x are fully supported.
+PHP 8.3+ and Symfony 7.3, 7.4 and 8.x are supported.
 
 If you're not using Symfony Flex, enable the bundle manually in config/bundles.php:
 
@@ -75,6 +75,7 @@ the user exits the page.
 
 Tracked data includes:
 * 📄 Current URL
+* 🔗 Canonical URL, when provided
 * 🔀 Symfony route and route arguments
 * 📈 UTM campaign data (from URL)
 * 🌐 Browser language (navigator.language)
@@ -123,7 +124,8 @@ This entity stores information related to a visit (hit) and is related to a Page
 * pageCall: related PageCall
 * referrer: URL of the referrer
 * userAgent: received User Agent, raw format
-* anonymizedIP: IP address of the visitor anonymized (GDPR compliance)
+* url: actual URL observed for this hit
+* anonymizedIP: IP address anonymized to `/24` for IPv4 and `/64` for IPv6 by default
 * calledAt: datetime of the call
 * exitedAt: datetime of page exit
 * durationSeconds: calculated duration of the visit
@@ -150,8 +152,8 @@ class MyCustomListener
 {
     public function __invoke(PageCallTrackedEvent $event): void
     {
-        $pageCall = $event->pageCall;
-        $hit = $event->pageCallHit;
+        $pageCall = $event->getPageCall();
+        $hit = $event->getPageCallHit();
 
         // Example: export to your own system
         // or send it to a queue, or just log it
@@ -221,7 +223,7 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 #[ORM\Entity]
 class MyCustomPageCall implements PageCallInterface
 {
-    use \Zhortein\SeoTrackingBundle\Entity\Traits\PageCallTrait;
+    use \Zhortein\SeoTrackingBundle\Entity\PageCallTrait;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     private ?User $user = null;
@@ -231,6 +233,19 @@ class MyCustomPageCall implements PageCallInterface
 
 ```
 You can use the provided `PageCallTrait` and `PageCallHitTrait` to avoid duplicating field declarations or missing fields.
+
+The controller uses the configured classes for repository lookup and creation. Classes using a constructor with required arguments can replace the default factories:
+
+```yaml
+# config/services.yaml
+services:
+    App\Seo\PageCallFactory: ~
+
+    Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface:
+        alias: App\Seo\PageCallFactory
+```
+
+Implement `PageCallFactoryInterface::create()` and return your configured `PageCallInterface`. The equivalent `PageCallHitFactoryInterface` is available for hits. `TrackingEntityAccessor` can also be replaced when a custom entity deliberately does not expose the historical methods supplied by the bundle traits.
 
 ### ⚠️ Notes
 
@@ -247,4 +262,21 @@ php bin/console doctrine:migrations:migrate
 > For technical details on how this is achieved, see the ZhorteinSeoTrackingExtension class and the use of Symfony's 
 > prependExtensionConfig() method.
 
+## IP anonymization
+
+The built-in anonymizer supports IPv4 and IPv6. Prefixes can be configured without replacing the tracking controller:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    anonymization:
+        ipv4_prefix: 24
+        ipv6_prefix: 64
+```
+
+For a different policy, decorate or replace `Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizerInterface`.
+
+## Upgrading to 1.3
+
+The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
 

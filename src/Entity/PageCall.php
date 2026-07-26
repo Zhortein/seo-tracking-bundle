@@ -8,9 +8,9 @@ use Zhortein\SeoTrackingBundle\Repository\PageCallRepository;
 
 #[ORM\Entity(repositoryClass: PageCallRepository::class)]
 #[ORM\Table(name: 'seo_page_call')]
-#[ORM\Index(name: 'seo_page_call_idx', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
-#[ORM\UniqueConstraint(name: 'seo_page_call_uq', columns: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
-#[UniqueEntity(fields: ['url', 'campaign', 'medium', 'source', 'term', 'content', 'bot'])]
+#[ORM\Index(name: 'seo_page_call_grouping_idx', columns: ['grouping_key'])]
+#[ORM\UniqueConstraint(name: 'seo_page_call_grouping_uq', columns: ['grouping_key'])]
+#[UniqueEntity(fields: ['groupingKey'])]
 class PageCall implements PageCallInterface
 {
     use PageCallTrait;

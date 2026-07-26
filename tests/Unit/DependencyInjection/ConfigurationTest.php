@@ -21,5 +21,9 @@ final class ConfigurationTest extends TestCase
         self::assertFalse($config['easylyse_enabled']);
         self::assertSame('', $config['easylyse_api_key']);
         self::assertSame(300, $config['easylyse_timeout']);
+        $anonymization = $config['anonymization'];
+        self::assertIsArray($anonymization);
+        self::assertSame(24, $anonymization['ipv4_prefix']);
+        self::assertSame(64, $anonymization['ipv6_prefix']);
     }
 }

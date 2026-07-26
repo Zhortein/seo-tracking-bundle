@@ -8,8 +8,14 @@ use Doctrine\ORM\Mapping as ORM;
 
 trait PageCallTrait
 {
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 2048)]
     private ?string $url = null;
+
+    #[ORM\Column(name: 'canonical_url', length: 2048, nullable: true)]
+    private ?string $canonicalUrl = null;
+
+    #[ORM\Column(name: 'grouping_key', length: 64, nullable: true)]
+    private ?string $groupingKey = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $route = null;
@@ -69,6 +75,30 @@ trait PageCallTrait
     public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getCanonicalUrl(): ?string
+    {
+        return $this->canonicalUrl;
+    }
+
+    public function setCanonicalUrl(?string $canonicalUrl): self
+    {
+        $this->canonicalUrl = $canonicalUrl;
+
+        return $this;
+    }
+
+    public function getGroupingKey(): ?string
+    {
+        return $this->groupingKey;
+    }
+
+    public function setGroupingKey(string $groupingKey): self
+    {
+        $this->groupingKey = $groupingKey;
 
         return $this;
     }
