@@ -31,5 +31,27 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($statistics);
         self::assertSame('bootstrap5', $statistics['theme']);
         self::assertNull($statistics['template']);
+        $retention = $config['retention'];
+        self::assertIsArray($retention);
+        self::assertNull($retention['days']);
+        self::assertSame(500, $retention['batch_size']);
+        self::assertFalse($retention['remove_empty_page_calls']);
+    }
+
+    public function testRetentionPolicyCanBeConfigured(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'retention' => [
+                'days' => 180,
+                'batch_size' => 250,
+                'remove_empty_page_calls' => true,
+            ],
+        ]]);
+
+        $retention = $config['retention'];
+        self::assertIsArray($retention);
+        self::assertSame(180, $retention['days']);
+        self::assertSame(250, $retention['batch_size']);
+        self::assertTrue($retention['remove_empty_page_calls']);
     }
 }
