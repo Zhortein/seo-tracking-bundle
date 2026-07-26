@@ -66,6 +66,15 @@ YAML);
         // Register dynamic targetEntities for Doctrine
         $container->prependExtensionConfig('doctrine', [
             'orm' => [
+                'mappings' => [
+                    'ZhorteinSeoTrackingBundle' => [
+                        'is_bundle' => false,
+                        'type' => 'attribute',
+                        'dir' => realpath(__DIR__.'/../../Entity'),
+                        'prefix' => 'Zhortein\SeoTrackingBundle\Entity',
+                        'alias' => 'ZhorteinSeoTracking',
+                    ],
+                ],
                 'resolve_target_entities' => [
                     PageCallInterface::class => $config['page_call_class'],
                     PageCallHitInterface::class => $config['page_call_hit_class'],
