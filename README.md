@@ -122,6 +122,12 @@ document.dispatchEvent(new CustomEvent('seo-tracking:consent-revoked'));
 
 The checker also protects the tracking endpoint; revocation closes an existing hit but does not create a new one or erase historical data. See [`docs/consent.md`](docs/consent.md) for the service contract, configurable event names, CMP integration order and direct Stimulus usage.
 
+## Rate limiting
+
+Public creation and closure endpoints can independently use named Symfony RateLimiter policies. The integration is disabled by default and does not add a runtime dependency unless it is enabled. Rejected requests return HTTP `429` before parsing or database access, and the default bucket key is a SHA-256 hash of Symfony's resolved client IP.
+
+See [`docs/rate-limiting.md`](docs/rate-limiting.md) for installation, configuration, response headers, trusted-proxy guidance and replaceable service contracts.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).
