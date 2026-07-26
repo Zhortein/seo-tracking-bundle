@@ -52,11 +52,9 @@ final class DocumentationIntegrityTest extends TestCase
             $markdown = $this->read($file);
             preg_match_all('/\[[^\]]*]\(([^)\s]+)(?:\s+["\'][^)]*)?\)/', $markdown, $matches);
 
-            /** @var list<string> $targets */
-            $targets = $matches[1] ?? [];
+            $targets = $matches[1];
             foreach ($targets as $target) {
-                if ('' === $target
-                    || str_starts_with($target, '#')
+                if (str_starts_with($target, '#')
                     || 1 === preg_match('/^[a-z][a-z0-9+.-]*:/i', $target)) {
                     continue;
                 }
@@ -140,7 +138,7 @@ final class DocumentationIntegrityTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $configuration
+     * @param array<mixed, mixed> $configuration
      *
      * @return list<string>
      */
@@ -148,6 +146,7 @@ final class DocumentationIntegrityTest extends TestCase
     {
         $keys = [];
         foreach ($configuration as $key => $value) {
+            self::assertIsString($key);
             $path = '' === $prefix ? $key : $prefix.'.'.$key;
             if (is_array($value)) {
                 array_push($keys, ...$this->flattenConfiguration($value, $path));
