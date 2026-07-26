@@ -42,6 +42,20 @@ services:
     Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DuplicatePageCallMergerInterface:
         alias: Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DefaultEntityDuplicatePageCallMerger
 
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPolicy:
+        arguments:
+            $days: '%zhortein_seo_tracking.retention.days%'
+            $batchSize: '%zhortein_seo_tracking.retention.batch_size%'
+            $removeEmptyPageCalls: '%zhortein_seo_tracking.retention.remove_empty_page_calls%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurgerInterface:
+        alias: Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger
+
     Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer:
         arguments:
             $ipv4Prefix: '%zhortein_seo_tracking.anonymization.ipv4_prefix%'

@@ -39,6 +39,7 @@ jobs:
         run: >-
           composer require --no-update
           "symfony/asset-mapper:${{ matrix.symfony }}"
+          "symfony/console:${{ matrix.symfony }}"
           "symfony/filesystem:${{ matrix.symfony }}"
           "symfony/framework-bundle:${{ matrix.symfony }}"
           "symfony/http-client:${{ matrix.symfony }}"
@@ -53,7 +54,6 @@ jobs:
           "symfony/browser-kit:${{ matrix.symfony }}"
           "symfony/cache:${{ matrix.symfony }}"
           "symfony/config:${{ matrix.symfony }}"
-          "symfony/console:${{ matrix.symfony }}"
           "symfony/css-selector:${{ matrix.symfony }}"
           "symfony/dependency-injection:${{ matrix.symfony }}"
           "symfony/doctrine-bridge:${{ matrix.symfony }}"

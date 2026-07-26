@@ -331,6 +331,24 @@ php bin/console zhortein:seo-tracking:backfill-grouping-keys
 
 Backfill and duplicate consolidation are always explicit. The command is resumable, processes bounded batches and refuses to guess how custom-entity fields should be merged. See [`docs/grouping-backfill.md`](docs/grouping-backfill.md) before using `--apply` or `--merge-duplicates`.
 
+## Tracking-data retention
+
+Retention is opt-in and every purge is a dry-run unless `--apply` is supplied:
+
+```yaml
+zhortein_seo_tracking:
+    retention:
+        days: 180
+        batch_size: 500
+        remove_empty_page_calls: false
+```
+
+```bash
+php bin/console zhortein:seo-tracking:purge
+```
+
+The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
+
 ## Upgrading to 1.3
 
 Update the package with:

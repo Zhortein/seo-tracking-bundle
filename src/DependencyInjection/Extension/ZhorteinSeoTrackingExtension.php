@@ -48,6 +48,10 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $container->setParameter('zhortein_seo_tracking.tracking_url', $this->optionalString($config['tracking_url'] ?? null, 'tracking_url'));
         $container->setParameter('zhortein_seo_tracking.exit_url', $this->optionalString($config['exit_url'] ?? null, 'exit_url'));
         $container->setParameter('zhortein_seo_tracking.statistics.template', $this->statisticsTemplate($config['statistics'] ?? null));
+        $retention = $this->retention($config['retention'] ?? null);
+        $container->setParameter('zhortein_seo_tracking.retention.days', $retention['days']);
+        $container->setParameter('zhortein_seo_tracking.retention.batch_size', $retention['batch_size']);
+        $container->setParameter('zhortein_seo_tracking.retention.remove_empty_page_calls', $retention['remove_empty_page_calls']);
 
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
@@ -160,5 +164,28 @@ YAML);
         return 'bootstrap5' === ($statistics['theme'] ?? null)
             ? '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig'
             : null;
+    }
+
+    /**
+     * @return array{days: ?int, batch_size: int, remove_empty_page_calls: bool}
+     */
+    private function retention(mixed $retention): array
+    {
+        if (!is_array($retention)) {
+            throw new \LogicException('The "retention" option must be an array.');
+        }
+
+        $days = $retention['days'] ?? null;
+        $batchSize = $retention['batch_size'] ?? null;
+        $removeEmptyPageCalls = $retention['remove_empty_page_calls'] ?? null;
+        if ((null !== $days && !is_int($days)) || !is_int($batchSize) || !is_bool($removeEmptyPageCalls)) {
+            throw new \LogicException('Invalid SEO tracking retention configuration.');
+        }
+
+        return [
+            'days' => $days,
+            'batch_size' => $batchSize,
+            'remove_empty_page_calls' => $removeEmptyPageCalls,
+        ];
     }
 }

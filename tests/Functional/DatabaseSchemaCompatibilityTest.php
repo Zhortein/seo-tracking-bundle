@@ -14,6 +14,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Controller\PageCallController;
 use Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\GroupingBackfillOptions;
 use Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\HistoricalGroupingKeyBackfiller;
+use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger;
+use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPurgeOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
@@ -35,10 +37,12 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $controller = $container->get(PageCallController::class);
             $dispatcher = $container->get(EventDispatcherInterface::class);
             $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
+            $purger = $container->get(HitRetentionPurger::class);
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
             self::assertInstanceOf(HistoricalGroupingKeyBackfiller::class, $backfiller);
+            self::assertInstanceOf(HitRetentionPurger::class, $purger);
 
             $metadata = [
                 $entityManager->getClassMetadata(PageCall::class),
@@ -81,6 +85,19 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             self::assertSame(1, $result->merged);
             self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
             self::assertSame(3, $entityManager->getRepository(PageCallHit::class)->count([]));
+
+            $purge = $purger->purge(new RetentionPurgeOptions(
+                new \DateTimeImmutable('2026-01-01'),
+                true,
+                1,
+            ));
+            self::assertSame(1, $purge->purgedHits);
+            self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
+            self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+
+            $remainingPageCall = $entityManager->getRepository(PageCall::class)->findOneBy([]);
+            self::assertInstanceOf(PageCall::class, $remainingPageCall);
+            self::assertSame(2, $remainingPageCall->getNbCalls());
         } finally {
             if ($schemaTool instanceof SchemaTool && [] !== $metadata) {
                 $schemaTool->dropSchema($metadata);
