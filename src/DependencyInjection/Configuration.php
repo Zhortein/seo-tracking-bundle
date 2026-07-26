@@ -11,20 +11,9 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * Config tree.
-     *
-     *  zhortein_seo_tracking:
-     *      page_call_class: Zhortein\SeoTrackingBundle\Entity\PageCall
-     *      page_call_hit_class: Zhortein\SeoTrackingBundle\Entity\PageCallHit
-     *      isatis_concept_enabled: false
-     *      isatis_concept_api_key: ''
-     *      isatis_concept_api_endpoint: ''
-     *      auto_send: false
-     */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('zhortein_seo_tracker');
+        $treeBuilder = new TreeBuilder('zhortein_seo_tracking');
 
         $treeBuilder->getRootNode()
                 ->addDefaultsIfNotSet()

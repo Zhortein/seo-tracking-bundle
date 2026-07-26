@@ -28,7 +28,7 @@ This project follows a simple rule:
 
 You can help in many ways:
 
-- 📥 Report bugs via [GitHub issues](../../issues)
+- 📥 Report bugs via [GitHub issues](https://github.com/Zhortein/seo-tracking-bundle/issues)
 - 💡 Suggest features (see [`FEATURE_IDEAS.md`](./FEATURE_IDEAS.md))
 - 🧪 Write or improve tests
 - 🧼 Refactor code or improve performance
@@ -45,9 +45,6 @@ cd seo-tracking-bundle
 
 # Install dependencies
 make installdeps
-
-# Update dependencies
-make updatedeps
 
 # Run PHPStan
 make phpstan
@@ -74,6 +71,11 @@ GitHub Actions runs these checks on PHP 8.3, 8.4 and 8.5 (lowest and current
 supported dependencies), plus Node.js 22 and 24. The default schema and
 functional grouping behavior are also exercised on SQLite, PostgreSQL 16 and
 MySQL 8.4.
+
+The PHPUnit suite includes documentation integrity checks. It verifies that
+the required guides exist, the documentation index covers every topic, local
+Markdown links resolve and the configuration reference contains every public
+configuration key.
 
 ## 🔀 Submitting a pull request
 1. Fork the repository
@@ -110,6 +112,24 @@ To run tests:
 ```bash
 make test
 ```
+
+## 📚 Documentation
+
+Public documentation is written in English. Keep the root README concise and
+put detailed behavior in a focused `docs/*.md` guide linked from
+[`docs/index.md`](docs/index.md).
+
+Documentation changes must:
+
+- describe generic bundle behavior rather than one consuming application;
+- match the implemented public signatures, defaults and validation bounds;
+- include copyable examples for new public APIs;
+- state authorization, privacy, migration and destructive-operation
+  boundaries where applicable;
+- update the changelog when user-visible guidance changes.
+
+Run `composer test` after adding or renaming a guide so the documentation
+integrity checks can validate links and index coverage.
 
 ## 🧠 Feature ideas
 Check the [FEATURE_IDEAS.md](./FEATURE_IDEAS.md) file for inspiration, open discussions, or things we plan to add later. 

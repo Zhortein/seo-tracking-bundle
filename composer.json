@@ -2,7 +2,7 @@
   "name": "zhortein/seo-tracking-bundle",
   "type": "symfony-bundle",
   "keywords": ["symfony", "symfony-ux", "bundle", "seo", "track", "tracking", "utm", "stats", "statistics"],
-  "description": "This bundle is dedicated to Symfony applications and provide metrics gathering on page calls.",
+  "description": "Privacy-conscious page, campaign and engagement tracking for Symfony applications.",
   "homepage": "https://www.david-renard.fr",
   "license": "MIT",
   "authors": [
