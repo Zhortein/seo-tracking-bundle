@@ -30,18 +30,40 @@ class SeoTrackingDataCollector extends DataCollector
         return 'seo_tracking';
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getUtm(): array
     {
-        return $this->data['utm'] ?? [];
+        $utm = $this->data['utm'] ?? null;
+        if (!is_array($utm)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($utm as $key => $value) {
+            if (is_string($key) && is_string($value)) {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
     }
 
     public function getRoute(): ?string
     {
-        return $this->data['route'] ?? null;
+        $route = $this->data['route'] ?? null;
+
+        return is_string($route) ? $route : null;
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getRouteParams(): array
     {
-        return $this->data['route_params'] ?? [];
+        $routeParams = $this->data['route_params'] ?? null;
+
+        return is_array($routeParams) ? $routeParams : [];
     }
 }

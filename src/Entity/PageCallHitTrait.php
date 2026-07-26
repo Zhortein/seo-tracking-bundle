@@ -139,6 +139,7 @@ trait PageCallHitTrait
     {
         $this->exitedAt = $exitedAt;
         $this->updateDuration();
+
         return $this;
     }
 

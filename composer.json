@@ -5,7 +5,6 @@
   "description": "This bundle is dedicated to Symfony applications and provide metrics gathering on page calls.",
   "homepage": "https://www.david-renard.fr",
   "license": "MIT",
-  "version": "1.2.11",
   "authors": [
     {
       "name": "David Renard",
@@ -20,6 +19,7 @@
     "doctrine/doctrine-bundle": "^2.15|^3.2",
     "doctrine/orm": "^3.3|^4.0",
     "symfony/asset-mapper": "^7.3|^8.0",
+    "symfony/filesystem": "^7.3|^8.0",
     "symfony/framework-bundle": "^7.3|^8.0",
     "symfony/http-client": "^7.3|^8.0",
     "symfony/string": "^7.3|^8.0",
@@ -29,14 +29,14 @@
     "symfony/yaml": "^7.3|^8.0"
   },
   "require-dev": {
+    "friendsofphp/php-cs-fixer": "^v3.75.0",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-doctrine": "^2.0",
     "phpstan/phpstan-symfony": "^2.0",
     "phpunit/php-code-coverage": "^12.3.1",
     "phpunit/phpunit": "^12.2.5",
-    "friendsofphp/php-cs-fixer": "^v3.75.0",
-    "symfony/phpunit-bridge": "^7.3|^8.0",
     "roave/security-advisories": "dev-latest",
+    "symfony/phpunit-bridge": "^7.3|^8.0",
     "symfony/test-pack": "^1.0"
   },
   "config": {
@@ -53,6 +53,14 @@
     }
   },
   "scripts": {
-    "php-cs-fixer": "php-cs-fixer fix src --verbose --rules=@Symfony"
+    "cs-check": "php-cs-fixer fix --dry-run --diff --using-cache=no",
+    "php-cs-fixer": "php-cs-fixer fix --verbose",
+    "phpstan": "phpstan analyse --memory-limit=1G",
+    "test": "phpunit",
+    "qa": [
+      "@cs-check",
+      "@phpstan",
+      "@test"
+    ]
   }
 }

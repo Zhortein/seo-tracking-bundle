@@ -14,6 +14,9 @@ trait PageCallTrait
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $route = null;
 
+    /**
+     * @var array<string, mixed>|null
+     */
     #[ORM\Column(nullable: true)]
     private ?array $routeArgs = null;
 
@@ -82,11 +85,17 @@ trait PageCallTrait
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getRouteArgs(): ?array
     {
         return $this->routeArgs;
     }
 
+    /**
+     * @param array<string, mixed>|null $routeArgs
+     */
     public function setRouteArgs(?array $routeArgs): self
     {
         $this->routeArgs = $routeArgs;
@@ -201,6 +210,10 @@ trait PageCallTrait
     public function addHit(PageCallHitInterface $hit): self
     {
         if (!$this->hits->contains($hit)) {
+            if (!method_exists($hit, 'setPageCall')) {
+                throw new \LogicException(sprintf('%s must provide a setPageCall() method.', $hit::class));
+            }
+
             $this->hits->add($hit);
             $hit->setPageCall($this);
         }
@@ -211,6 +224,10 @@ trait PageCallTrait
     public function removeHit(PageCallHitInterface $hit): self
     {
         if ($this->hits->removeElement($hit)) {
+            if (!method_exists($hit, 'getPageCall') || !method_exists($hit, 'setPageCall')) {
+                throw new \LogicException(sprintf('%s must provide getPageCall() and setPageCall() methods.', $hit::class));
+            }
+
             // set the owning side to null (unless already changed)
             if ($hit->getPageCall() === $this) {
                 $hit->setPageCall(null);

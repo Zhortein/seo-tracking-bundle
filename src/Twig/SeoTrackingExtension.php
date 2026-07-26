@@ -17,7 +17,7 @@ final readonly class SeoTrackingExtension
         $request = $this->requestStack->getMainRequest();
         $route = $request?->attributes->get('_route', '');
         $routeArgs = $request?->attributes->get('_route_params', '{}');
-        if ($routeArgs === []) {
+        if ([] === $routeArgs) {
             $routeArgs = '{}';
         }
 
@@ -46,10 +46,16 @@ final readonly class SeoTrackingExtension
     private function encodeStimulusValue(mixed $value): string
     {
         try {
+            if (is_array($value) || is_object($value)) {
+                $value = json_encode($value, JSON_THROW_ON_ERROR);
+            } elseif (is_scalar($value) || null === $value) {
+                $value = (string) $value;
+            } else {
+                return '';
+            }
+
             return htmlspecialchars(
-                is_array($value) || is_object($value)
-                    ? json_encode($value, JSON_THROW_ON_ERROR)
-                    : (string) $value,
+                $value,
                 ENT_QUOTES
             );
         } catch (\Throwable) {
