@@ -6,13 +6,15 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
+use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 
 class Configuration implements ConfigurationInterface
 {
     /**
      * Config tree.
      *
-     *  zhortein_seo_tracker:
+     *  zhortein_seo_tracking:
      *      page_call_class: Zhortein\SeoTrackingBundle\Entity\PageCall
      *      page_call_hit_class: Zhortein\SeoTrackingBundle\Entity\PageCallHit
      *      isatis_concept_enabled: false
@@ -30,10 +32,25 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('page_call_class')
                         ->defaultValue(PageCall::class)
                         ->cannotBeEmpty()
+                        ->validate()
+                            ->ifTrue(static fn (string $class): bool => !is_a($class, PageCallInterface::class, true))
+                            ->thenInvalid(sprintf('The configured page call class must implement %s.', PageCallInterface::class))
+                        ->end()
                     ->end()
                     ->scalarNode('page_call_hit_class')
                         ->defaultValue(PageCallHit::class)
                         ->cannotBeEmpty()
+                        ->validate()
+                            ->ifTrue(static fn (string $class): bool => !is_a($class, PageCallHitInterface::class, true))
+                            ->thenInvalid(sprintf('The configured page call hit class must implement %s.', PageCallHitInterface::class))
+                        ->end()
+                    ->end()
+                    ->arrayNode('anonymization')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->integerNode('ipv4_prefix')->min(0)->max(32)->defaultValue(24)->end()
+                            ->integerNode('ipv6_prefix')->min(0)->max(128)->defaultValue(64)->end()
+                        ->end()
                     ->end()
                     ->booleanNode('easylyse_enabled')->defaultValue(false)->end()
                     ->scalarNode('easylyse_api_key')->defaultValue('')->end()

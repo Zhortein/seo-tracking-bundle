@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Configurable factories for `PageCallInterface` and `PageCallHitInterface`.
+- IPv4 and IPv6 prefix anonymization through a replaceable service.
+- Canonical URL grouping while preserving the observed URL on each hit.
+- A deterministic non-null grouping key for newly tracked calls.
+
+### Fixed
+
+- Configured entity classes are now used by repositories, creation, exit handling and events.
+- Malformed JSON, missing optional fields and absent user agents return controlled responses.
+- Hit closure is idempotent.
+- The ineffective nullable UTM composite uniqueness constraint is replaced by a grouping-key constraint.
+- The PHPStan baseline was removed after fixing the audited errors.
+
+### Migration
+
+- Default entities require a Doctrine migration. See [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
+
+---
+
 ## [1.2.2] – 2025-07-06
 
 ### ✨ Added

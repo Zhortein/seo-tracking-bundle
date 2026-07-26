@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Zhortein\SeoTrackingBundle\ZhorteinSeoTrackingBundle;
 
-final class TestKernel extends Kernel
+class TestKernel extends Kernel
 {
     use MicroKernelTrait;
 
@@ -33,7 +33,7 @@ final class TestKernel extends Kernel
 
     public function getCacheDir(): string
     {
-        return $this->getProjectDir().'/var/cache/'.$this->environment;
+        return $this->getProjectDir().'/var/cache/'.hash('xxh3', static::class).'/'.$this->environment;
     }
 
     public function getLogDir(): string
