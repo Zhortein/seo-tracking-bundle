@@ -22,7 +22,12 @@ The grouping key remains nullable for migrated rows so the migration does not fa
 
 1. Back up the tracking tables.
 2. Stop writes to the two tracking endpoints or deploy the migration and application in one maintenance window.
-3. Install the new bundle version.
+3. Install the new bundle version:
+
+   ```bash
+   composer require zhortein/seo-tracking-bundle:^1.3
+   ```
+
 4. Generate the migration:
 
    ```bash
@@ -39,9 +44,28 @@ The grouping key remains nullable for migrated rows so the migration does not fa
    php bin/console doctrine:migrations:migrate
    ```
 
-7. Deploy the application and verify a track/exit cycle.
+7. Compile the application's assets when production uses AssetMapper:
+
+   ```bash
+   php bin/console asset-map:compile
+   ```
+
+8. Deploy the application and verify a track/exit cycle, including a Turbo navigation when Turbo is enabled.
 
 Do not make `grouping_key` non-null until historical data has been explicitly consolidated and backfilled. That optional consolidation is deliberately outside the automatic migration because choosing which duplicate aggregate to retain is application data policy.
+
+## Local overrides that may no longer be needed
+
+Applications can remove local copies or decorations that existed only to work around the following pre-1.3 limitations:
+
+- the invalid distributed Stimulus controller;
+- hard-coded tracking and exit endpoint URLs;
+- duplicate listeners or unclosed hits during Turbo navigation and Stimulus reconnection;
+- direct construction of the bundle's default `PageCall` and `PageCallHit` classes;
+- IPv4-only IP anonymization;
+- missing canonical-URL grouping.
+
+Before deleting an override, compare it with the application's current requirements. Keep application-specific consent, retention, authorization, enrichment or presentation logic. Custom entities remain supported through configuration and factories, and custom statistics presentation remains supported through Twig templates and themes.
 
 ## Rollback
 
