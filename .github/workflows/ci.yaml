@@ -10,17 +10,23 @@ permissions:
 
 jobs:
   php:
-    name: PHP ${{ matrix.php }} (${{ matrix.dependencies }})
+    name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }} (${{ matrix.dependencies }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - php: '8.3'
+            symfony: '7.3.*'
             dependencies: lowest
+          - php: '8.3'
+            symfony: '7.4.*'
+            dependencies: stable
           - php: '8.4'
+            symfony: '8.0.*'
             dependencies: stable
           - php: '8.5'
+            symfony: '8.1.*'
             dependencies: stable
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +35,22 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ctype, dom, iconv, intl, json, mbstring, pdo_sqlite, tokenizer, xml, xmlwriter
           coverage: none
+      - name: Select Symfony ${{ matrix.symfony }}
+        run: composer config extra.symfony.require '${{ matrix.symfony }}'
       - name: Validate Composer metadata
         run: composer validate --strict --no-check-publish
+      - name: Prepare legacy compatibility set
+        if: matrix.dependencies == 'lowest'
+        run: composer remove --dev --no-update roave/security-advisories
       - name: Install lowest dependencies
         if: matrix.dependencies == 'lowest'
-        run: composer update --prefer-lowest --prefer-stable --no-interaction --no-progress
+        run: composer update --prefer-lowest --prefer-stable --with-all-dependencies --no-interaction --no-progress --no-blocking
       - name: Install stable dependencies
         if: matrix.dependencies == 'stable'
-        run: composer update --prefer-stable --no-interaction --no-progress
+        run: composer update --prefer-stable --with-all-dependencies --no-interaction --no-progress
+      - name: Audit stable dependencies
+        if: matrix.dependencies == 'stable'
+        run: composer audit
       - name: Run PHPUnit
         run: composer test
       - name: Run PHPStan
