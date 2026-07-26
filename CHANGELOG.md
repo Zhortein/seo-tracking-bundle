@@ -8,6 +8,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected the configuration tree root used by `config:dump-reference` to
+  match the public `zhortein_seo_tracking` extension alias.
+
+### Documentation
+
+- Reworked the README as a concise project and compatibility landing page.
+- Added a complete documentation index, end-to-end quick start, exhaustive
+  configuration reference and application cookbook.
+- Documented the data model, custom-entity contract and historical Easylyse
+  forwarding behavior, including its privacy and operational boundaries.
+- Added CI coverage for required guides, local Markdown links and public
+  configuration keys.
+
 ---
 
 ## [1.7.0] – 2026-07-26
