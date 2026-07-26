@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Zhortein\SeoTrackingBundle\Statistics;
 
+use Zhortein\SeoTrackingBundle\Statistics\Cache\NullStatisticsReportCache;
+use Zhortein\SeoTrackingBundle\Statistics\Cache\StatisticsCacheKeyGenerator;
+use Zhortein\SeoTrackingBundle\Statistics\Cache\StatisticsReportCacheInterface;
 use Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface;
 use Zhortein\SeoTrackingBundle\Statistics\DTO\DimensionRankedValue;
 use Zhortein\SeoTrackingBundle\Statistics\DTO\DimensionRanking;
@@ -16,8 +19,21 @@ use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
 
 final readonly class StatisticsProvider implements StatisticsProviderInterface
 {
-    public function __construct(private StatisticsDataSourceInterface $dataSource)
-    {
+    private StatisticsReportCacheInterface $cache;
+    private StatisticsCacheKeyGenerator $cacheKeyGenerator;
+
+    public function __construct(
+        private StatisticsDataSourceInterface $dataSource,
+        ?StatisticsReportCacheInterface $cache = null,
+        ?StatisticsCacheKeyGenerator $cacheKeyGenerator = null,
+        private int $cacheTtl = 0,
+    ) {
+        if ($cacheTtl < 0) {
+            throw new \InvalidArgumentException('The statistics cache TTL cannot be negative.');
+        }
+
+        $this->cache = $cache ?? new NullStatisticsReportCache();
+        $this->cacheKeyGenerator = $cacheKeyGenerator ?? new StatisticsCacheKeyGenerator();
     }
 
     public function report(?StatisticsFilter $filter = null, int $limit = 10): StatisticsReport
@@ -27,6 +43,20 @@ final readonly class StatisticsProvider implements StatisticsProviderInterface
         }
 
         $filter ??= new StatisticsFilter();
+
+        if (0 === $this->cacheTtl) {
+            return $this->buildReport($filter, $limit);
+        }
+
+        return $this->cache->remember(
+            $this->cacheKeyGenerator->generate($filter, $limit),
+            $this->cacheTtl,
+            fn (): StatisticsReport => $this->buildReport($filter, $limit),
+        );
+    }
+
+    private function buildReport(StatisticsFilter $filter, int $limit): StatisticsReport
+    {
         $pageCalls = 0;
         $humanHits = 0;
         $robotHits = 0;

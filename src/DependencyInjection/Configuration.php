@@ -62,6 +62,29 @@ class Configuration implements ConfigurationInterface
                                 ->defaultValue('bootstrap5')
                             ->end()
                             ->scalarNode('template')->defaultNull()->end()
+                            ->arrayNode('cache')
+                                ->addDefaultsIfNotSet()
+                                ->children()
+                                    ->scalarNode('pool')
+                                        ->defaultNull()
+                                        ->validate()
+                                            ->ifTrue(static fn (?string $service): bool => null !== $service && '' === trim($service))
+                                            ->thenInvalid('The statistics cache pool service ID cannot be empty.')
+                                        ->end()
+                                    ->end()
+                                    ->integerNode('ttl')->defaultValue(0)->min(0)->end()
+                                ->end()
+                                ->validate()
+                                    ->ifTrue(static function (array $cache): bool {
+                                        $pool = $cache['pool'] ?? null;
+                                        $ttl = $cache['ttl'] ?? null;
+
+                                        return (null === $pool && 0 !== $ttl)
+                                            || (null !== $pool && (!is_int($ttl) || $ttl < 1));
+                                    })
+                                    ->thenInvalid('Configure both a statistics cache pool and a positive TTL, or disable both.')
+                                ->end()
+                            ->end()
                         ->end()
                     ->end()
                     ->arrayNode('retention')
