@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Zhortein\SeoTrackingBundle\Tests\Functional;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\SchemaTool;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Zhortein\SeoTrackingBundle\Controller\PageCallController;
+use Zhortein\SeoTrackingBundle\Entity\PageCall;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
+
+final class DatabaseSchemaCompatibilityTest extends TestCase
+{
+    #[RunInSeparateProcess]
+    public function testDefaultSchemaAndNullUtmGroupingOnConfiguredDatabase(): void
+    {
+        $kernel = new TestKernel('test', true);
+        $kernel->boot();
+        $schemaTool = null;
+        $metadata = [];
+
+        try {
+            $container = $kernel->getContainer()->get('test.service_container');
+            self::assertInstanceOf(ContainerInterface::class, $container);
+            $entityManager = $container->get(EntityManagerInterface::class);
+            $controller = $container->get(PageCallController::class);
+            $dispatcher = $container->get(EventDispatcherInterface::class);
+            self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
+            self::assertInstanceOf(PageCallController::class, $controller);
+            self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
+
+            $metadata = [
+                $entityManager->getClassMetadata(PageCall::class),
+                $entityManager->getClassMetadata(PageCallHit::class),
+            ];
+            $schemaTool = new SchemaTool($entityManager);
+            $schemaTool->createSchema($metadata);
+
+            $request = new Request(content: '{"url":"https://example.test/database"}');
+            $first = $controller->track($request, $entityManager, $dispatcher);
+            $second = $controller->track($request, $entityManager, $dispatcher);
+
+            self::assertSame(200, $first->getStatusCode(), (string) $first->getContent());
+            self::assertSame(200, $second->getStatusCode(), (string) $second->getContent());
+            self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
+            self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+        } finally {
+            if ($schemaTool instanceof SchemaTool && [] !== $metadata) {
+                $schemaTool->dropSchema($metadata);
+            }
+            $kernel->shutdown();
+        }
+    }
+}

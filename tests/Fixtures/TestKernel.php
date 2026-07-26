@@ -43,16 +43,21 @@ class TestKernel extends Kernel
 
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
+        $databaseUrl = getenv('SEO_TRACKING_TEST_DATABASE_URL');
+        $dbal = is_string($databaseUrl) && '' !== $databaseUrl
+            ? ['url' => $databaseUrl]
+            : [
+                'driver' => 'pdo_sqlite',
+                'memory' => true,
+            ];
+
         $container->loadFromExtension('framework', [
             'secret' => 'test',
             'test' => true,
             'router' => ['utf8' => true],
         ]);
         $container->loadFromExtension('doctrine', [
-            'dbal' => [
-                'driver' => 'pdo_sqlite',
-                'memory' => true,
-            ],
+            'dbal' => $dbal,
             'orm' => [
                 'auto_mapping' => true,
             ],
