@@ -47,7 +47,7 @@ php bin/console zhortein:seo-tracking:purge \
     --no-interaction
 ```
 
-The operation is resumable and idempotent. Each batch deletes only hits strictly older than the cutoff, then recomputes `nbCalls`, `firstCalledAt` and `lastCalledAt` from the surviving hits.
+The operation is resumable and idempotent. Each batch unlinks surviving hits whose `parentHit` is being purged, deletes only hits strictly older than the cutoff, then recomputes `nbCalls`, `firstCalledAt` and `lastCalledAt` from the remaining hits. These changes are committed atomically.
 
 To remove page-call aggregates emptied by the current purge, opt in explicitly:
 
@@ -84,5 +84,5 @@ Classes using the supplied traits meet this contract. Applications that delibera
 - Back up both tracking tables before the first apply run.
 - Run only one purge process at a time.
 - Monitor the command exit status and archived output.
-- Check the effect of foreign keys on a production copy; the default parent-hit relation uses `ON DELETE SET NULL`.
+- Check the effect of foreign keys on a production copy. The command explicitly clears affected parent links, and the default relation also uses `ON DELETE SET NULL`.
 - A purge is destructive. Restoring removed hits, their original identifiers and parent links requires restoring the tracking tables from backup.

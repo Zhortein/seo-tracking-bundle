@@ -74,6 +74,14 @@ final readonly class HitRetentionPurger implements HitRetentionPurgerInterface
             $connection = $entityManager->getConnection();
             $connection->beginTransaction();
             try {
+                $entityManager->createQueryBuilder()
+                    ->update($this->pageCallHitClass, 'child')
+                    ->set('child.parentHit', 'NULL')
+                    ->where('IDENTITY(child.parentHit) IN (:hitIds)')
+                    ->setParameter('hitIds', $hitIds)
+                    ->getQuery()
+                    ->execute();
+
                 $batchPurgedHits = (int) $entityManager->createQueryBuilder()
                     ->delete($this->pageCallHitClass, 'hit')
                     ->where(sprintf('hit.%s IN (:hitIds)', $hitIdentifier))
