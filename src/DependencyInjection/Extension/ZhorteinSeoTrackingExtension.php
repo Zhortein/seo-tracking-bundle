@@ -9,11 +9,16 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
 use Zhortein\SeoTrackingBundle\DTO\SeoTrackingOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
+use Zhortein\SeoTrackingBundle\Tracking\RateLimit\SymfonyTrackingRateLimiter;
+use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimiterInterface;
+use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimitKeyResolverInterface;
 
 class ZhorteinSeoTrackingExtension extends Extension implements PrependExtensionInterface
 {
@@ -55,6 +60,7 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $consent = $this->consent($config['consent'] ?? null);
         $container->setParameter('zhortein_seo_tracking.consent.grant_event', $consent['grant_event']);
         $container->setParameter('zhortein_seo_tracking.consent.revoke_event', $consent['revoke_event']);
+        $this->configureRateLimiter($container, $config['rate_limiter'] ?? null);
 
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
@@ -211,5 +217,37 @@ YAML);
             'grant_event' => $grantEvent,
             'revoke_event' => $revokeEvent,
         ];
+    }
+
+    private function configureRateLimiter(ContainerBuilder $container, mixed $rateLimiter): void
+    {
+        if (!is_array($rateLimiter)) {
+            throw new \LogicException('The "rate_limiter" option must be an array.');
+        }
+
+        $creationLimiter = $rateLimiter['creation_limiter'] ?? null;
+        $closureLimiter = $rateLimiter['closure_limiter'] ?? null;
+        if ((null !== $creationLimiter && !is_string($creationLimiter))
+            || (null !== $closureLimiter && !is_string($closureLimiter))) {
+            throw new \LogicException('Tracking rate limiter service IDs must be strings or null.');
+        }
+
+        if (null === $creationLimiter && null === $closureLimiter) {
+            return;
+        }
+
+        if (!interface_exists(RateLimiterFactoryInterface::class)) {
+            throw new \LogicException('The optional tracking rate limiter integration requires symfony/rate-limiter.');
+        }
+
+        $container->setDefinition(SymfonyTrackingRateLimiter::class, new Definition(
+            SymfonyTrackingRateLimiter::class,
+            [
+                null === $creationLimiter ? null : new Reference($creationLimiter),
+                null === $closureLimiter ? null : new Reference($closureLimiter),
+                new Reference(TrackingRateLimitKeyResolverInterface::class),
+            ],
+        ));
+        $container->setAlias(TrackingRateLimiterInterface::class, SymfonyTrackingRateLimiter::class);
     }
 }

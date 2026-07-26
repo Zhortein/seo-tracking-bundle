@@ -38,7 +38,11 @@
     "phpunit/phpunit": "^12.2.5",
     "roave/security-advisories": "dev-latest",
     "symfony/phpunit-bridge": "^7.3|^8.0",
+    "symfony/rate-limiter": "^7.3|^8.0",
     "symfony/test-pack": "^1.0"
+  },
+  "suggest": {
+    "symfony/rate-limiter": "Required only when the optional tracking endpoint rate limiting integration is enabled."
   },
   "config": {
     "sort-packages": true

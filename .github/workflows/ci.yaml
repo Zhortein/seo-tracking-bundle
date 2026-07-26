@@ -53,6 +53,7 @@ jobs:
           composer require --dev --no-update
           "symfony/browser-kit:${{ matrix.symfony }}"
           "symfony/cache:${{ matrix.symfony }}"
+          "symfony/clock:${{ matrix.symfony }}"
           "symfony/config:${{ matrix.symfony }}"
           "symfony/css-selector:${{ matrix.symfony }}"
           "symfony/dependency-injection:${{ matrix.symfony }}"
@@ -66,6 +67,7 @@ jobs:
           "symfony/options-resolver:${{ matrix.symfony }}"
           "symfony/phpunit-bridge:${{ matrix.symfony }}"
           "symfony/process:${{ matrix.symfony }}"
+          "symfony/rate-limiter:${{ matrix.symfony }}"
           "symfony/routing:${{ matrix.symfony }}"
           "symfony/stopwatch:${{ matrix.symfony }}"
           "symfony/twig-bridge:${{ matrix.symfony }}"
