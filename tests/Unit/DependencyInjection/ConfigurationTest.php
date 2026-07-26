@@ -36,6 +36,10 @@ final class ConfigurationTest extends TestCase
         self::assertNull($retention['days']);
         self::assertSame(500, $retention['batch_size']);
         self::assertFalse($retention['remove_empty_page_calls']);
+        $consent = $config['consent'];
+        self::assertIsArray($consent);
+        self::assertSame('seo-tracking:consent-granted', $consent['grant_event']);
+        self::assertSame('seo-tracking:consent-revoked', $consent['revoke_event']);
     }
 
     public function testRetentionPolicyCanBeConfigured(): void
@@ -53,5 +57,20 @@ final class ConfigurationTest extends TestCase
         self::assertSame(180, $retention['days']);
         self::assertSame(250, $retention['batch_size']);
         self::assertTrue($retention['remove_empty_page_calls']);
+    }
+
+    public function testConsentEventsCanBeConfigured(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'consent' => [
+                'grant_event' => 'cmp:analytics-granted',
+                'revoke_event' => 'cmp:analytics-revoked',
+            ],
+        ]]);
+
+        $consent = $config['consent'];
+        self::assertIsArray($consent);
+        self::assertSame('cmp:analytics-granted', $consent['grant_event']);
+        self::assertSame('cmp:analytics-revoked', $consent['revoke_event']);
     }
 }

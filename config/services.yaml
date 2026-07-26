@@ -67,10 +67,15 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
 
+    Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Consent\AllowAllTrackingConsentChecker
+
     Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
         arguments:
             $trackingUrl: '%zhortein_seo_tracking.tracking_url%'
             $exitUrl: '%zhortein_seo_tracking.exit_url%'
+            $consentGrantEvent: '%zhortein_seo_tracking.consent.grant_event%'
+            $consentRevokeEvent: '%zhortein_seo_tracking.consent.revoke_event%'
 
     Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource:
         arguments:

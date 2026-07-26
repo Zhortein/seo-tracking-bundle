@@ -8,12 +8,11 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 ## Data lifecycle
 
-- Optional consent hook that lets an application decide when frontend tracking starts without coupling the bundle to one consent manager.
-
 ### In progress for 1.4
 
 - Dry-run-first historical grouping consolidation and `grouping_key` backfill, with an explicit custom-entity merge policy before an application makes the column non-null.
 - Opt-in hit retention with preview, bounded purge batches and aggregate repair.
+- Replaceable server-side consent decisions and generic frontend grant/revoke events without coupling to a consent manager.
 
 ## Tracking
 

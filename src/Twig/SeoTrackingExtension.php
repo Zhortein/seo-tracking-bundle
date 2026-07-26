@@ -7,17 +7,23 @@ namespace Zhortein\SeoTrackingBundle\Twig;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Attribute\AsTwigFunction;
+use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
 
 final readonly class SeoTrackingExtension
 {
     private const DEFAULT_TRACKING_URL = '/zhortein/seo-tracking/page-call/track';
     private const DEFAULT_EXIT_URL = '/zhortein/seo-tracking/page-call/exit';
+    private const DEFAULT_CONSENT_GRANT_EVENT = 'seo-tracking:consent-granted';
+    private const DEFAULT_CONSENT_REVOKE_EVENT = 'seo-tracking:consent-revoked';
 
     public function __construct(
         private RequestStack $requestStack,
         private ?UrlGeneratorInterface $urlGenerator = null,
         private ?string $trackingUrl = null,
         private ?string $exitUrl = null,
+        private ?TrackingConsentCheckerInterface $consentChecker = null,
+        private string $consentGrantEvent = self::DEFAULT_CONSENT_GRANT_EVENT,
+        private string $consentRevokeEvent = self::DEFAULT_CONSENT_REVOKE_EVENT,
     ) {
     }
 
@@ -41,6 +47,9 @@ final readonly class SeoTrackingExtension
             'canonical-url' => $canonicalUrl,
             'tracking-url' => $this->endpoint($this->trackingUrl, 'seo_tracking_page_call', self::DEFAULT_TRACKING_URL),
             'exit-url' => $this->endpoint($this->exitUrl, 'seo_tracking_page_exit', self::DEFAULT_EXIT_URL),
+            'consent-granted' => $this->consentChecker?->isGranted($request) ?? true,
+            'consent-grant-event' => $this->consentGrantEvent,
+            'consent-revoke-event' => $this->consentRevokeEvent,
         ];
 
         foreach ($data as $key => $value) {
@@ -71,7 +80,9 @@ final readonly class SeoTrackingExtension
     private function encodeStimulusValue(mixed $value): string
     {
         try {
-            if (is_array($value) || is_object($value)) {
+            if (is_bool($value)) {
+                $value = $value ? 'true' : 'false';
+            } elseif (is_array($value) || is_object($value)) {
                 $value = json_encode($value, JSON_THROW_ON_ERROR);
             } elseif (is_scalar($value) || null === $value) {
                 $value = (string) $value;
