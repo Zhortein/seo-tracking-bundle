@@ -1,0 +1,5 @@
+{
+  "version": "1.6.0",
+  "milestone_description": "Privacy-bounded journey reports and portable application-defined hit dimensions with typed statistics.",
+  "issues": [52, 53, 54, 55]
+}

@@ -1,15 +1,15 @@
 # Roadmap for SeoTrackingBundle
 
-This file lists improvements deliberately left outside the 1.5 release. Items are exploratory unless they are attached to a GitHub milestone.
+This file lists improvements deliberately left outside the 1.6 release. Items are exploratory unless they are attached to a GitHub milestone.
 
 The bundle must remain generic: application-specific behavior belongs in configuration, replaceable services, events or overrideable templates.
 
 ---
 
-## Tracking
+## Identity and privacy
 
-- Visitor-flow reports based on `parentHit`, with clear expiry and privacy semantics. No “unique visitor” metric should be introduced without a reliable identity model and documented consent implications.
-- Optional structured metadata for application-defined dimensions, with portable Doctrine mapping considered before platform-specific JSON features.
+- No “unique visitor” metric should be introduced without a reliable identity model, explicit consent implications and defined deletion semantics.
+- Any future authenticated or cross-device journey model must remain separate from the heuristic `parentHit` fragments.
 
 ## Statistics and presentation
 
@@ -22,6 +22,13 @@ The bundle must remain generic: application-specific behavior belongs in configu
 
 - Expand database CI when a platform can be supported continuously.
 - Review Symfony 7.3 support separately once its ecosystem constraints no longer permit a secure dependency set.
+
+## Delivered in 1.6
+
+- Typed, bounded journey fragments and transition reports based on `parentHit`, with explicit retention, consent and filter-boundary semantics.
+- Portable, bounded application-defined scalar dimensions stored on individual hits.
+- Exact dimension filters, typed rankings and Bootstrap rendering without platform-specific JSON queries.
+- Backward-compatible statistics for legacy custom hit entities without a dimensions field.
 
 ## Delivered in 1.5
 

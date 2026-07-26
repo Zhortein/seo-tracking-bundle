@@ -400,15 +400,17 @@ php bin/console zhortein:seo-tracking:purge
 
 The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
 
-## Upgrading to 1.5
+## Upgrading to 1.6
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.5
+composer require zhortein/seo-tracking-bundle:^1.6
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
 php bin/console asset-map:compile
 ```
 
-No Doctrine schema migration is required from 1.4. Rate limiting remains disabled, the invalid-event reporter remains a no-op and existing bot-detector replacements remain supported. Read the [1.5 upgrade procedure](docs/upgrade-1.5.md) before enabling endpoint limits or exporting rejected-request telemetry.
+A nullable Doctrine JSON column is required for dimensions when the default hit entity or `PageCallHitTrait` is used. Existing rows need no backfill. Read the [1.6 upgrade procedure](docs/upgrade-1.6.md) for migration-first deployment, custom entities, verification and rollback.
 
 Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).

@@ -10,6 +10,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.6.0] – 2026-07-26
+
+### Added
+
+- A typed, replaceable journey-reporting API based on persisted `parentHit` links.
+- Bounded path fragments, transition rankings and summaries with explicit filter-boundary, cycle and depth-truncation metadata.
+- Optional application-defined hit dimensions with portable nullable Doctrine JSON storage.
+- Shared dimension normalization with bounded keys, scalar values, entry count and encoded size.
+- Exact, type-sensitive dimension filters and typed per-dimension rankings in the statistics API.
+- A dedicated custom-dimensions block in the bundled Bootstrap 5 statistics theme.
+- Documentation and functional coverage for journey semantics, dimension privacy, custom entities and migration.
+
+### Changed
+
+- The Stimulus controller and Twig helper can send explicit application-defined dimensions with every new hit.
+- The default statistics source hydrates and filters dimensions without database-specific JSON operators.
+- Legacy custom hit entities without a dimensions field continue to use the default statistics source with empty dimension rankings.
+- Journey reports deliberately describe graph fragments rather than visitors, devices or stable sessions.
+
+### Migration
+
+- Default and trait-based custom hit entities require a nullable Doctrine JSON `dimensions` column. Existing rows remain valid with `NULL`; no data backfill is required. See [`docs/upgrade-1.6.md`](docs/upgrade-1.6.md).
+
+---
+
 ## [1.5.0] – 2026-07-26
 
 ### Added
