@@ -128,6 +128,12 @@ Public creation and closure endpoints can independently use named Symfony RateLi
 
 See [`docs/rate-limiting.md`](docs/rate-limiting.md) for installation, configuration, response headers, trusted-proxy guidance and replaceable service contracts.
 
+## Bot classification
+
+The default bot detector now returns an explainable, typed classification while persisting only the existing boolean flag. Applications can replace `BotClassifierInterface`; existing `BotDetectorInterface` replacements remain supported through an adapter. The classification is exposed on `PageCallTrackedEvent` and is never a visitor identity.
+
+See [`docs/bot-classification.md`](docs/bot-classification.md) for default categories, extension contracts, backward compatibility and privacy limitations.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).
@@ -193,6 +199,7 @@ class MyCustomListener
     {
         $pageCall = $event->getPageCall();
         $hit = $event->getPageCallHit();
+        $classification = $event->getBotClassification();
 
         // Example: export to your own system
         // or send it to a queue, or just log it

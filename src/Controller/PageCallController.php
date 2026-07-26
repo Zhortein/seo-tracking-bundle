@@ -14,7 +14,7 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 use Zhortein\SeoTrackingBundle\Event\PageCallExitEvent;
 use Zhortein\SeoTrackingBundle\Event\PageCallTrackedEvent;
-use Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface;
+use Zhortein\SeoTrackingBundle\Tracking\Bot\BotClassifierInterface;
 use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
 use Zhortein\SeoTrackingBundle\Tracking\Entity\TrackingEntityAccessor;
 use Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface;
@@ -41,7 +41,7 @@ class PageCallController extends AbstractController
         private readonly TrackingPayloadFactory $payloadFactory,
         private readonly PageCallGroupingKeyGeneratorInterface $groupingKeyGenerator,
         private readonly IpAnonymizerInterface $ipAnonymizer,
-        private readonly BotDetectorInterface $botDetector,
+        private readonly BotClassifierInterface $botClassifier,
         private readonly TrackingEntityAccessor $entityAccessor,
         private readonly TrackingConsentCheckerInterface $consentChecker,
         private readonly TrackingRateLimiterInterface $rateLimiter,
@@ -68,7 +68,8 @@ class PageCallController extends AbstractController
 
         $calledAt = new \DateTimeImmutable();
         $userAgent = $request->headers->get('User-Agent');
-        $bot = $this->botDetector->isBot($userAgent);
+        $botClassification = $this->botClassifier->classify($userAgent);
+        $bot = $botClassification->bot;
         $groupingKey = $this->groupingKeyGenerator->generate($payload->groupingUrl(), $payload->utm(), $bot);
 
         $pageCall = $this->findPageCall($em, $payload, $groupingKey, $bot);
@@ -108,7 +109,7 @@ class PageCallController extends AbstractController
             return new JsonResponse(['error' => 'Database error'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $dispatcher->dispatch(new PageCallTrackedEvent($pageCall, $hit));
+        $dispatcher->dispatch(new PageCallTrackedEvent($pageCall, $hit, $botClassification));
 
         return new JsonResponse(['hitId' => $this->entityAccessor->getHitId($hit)]);
     }
