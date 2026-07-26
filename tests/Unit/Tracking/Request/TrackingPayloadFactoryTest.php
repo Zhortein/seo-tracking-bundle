@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Zhortein\SeoTrackingBundle\Tracking\Request\TrackingPayloadFactory;
+use Zhortein\SeoTrackingBundle\Tracking\Request\UnsupportedTrackingPayloadException;
 
 final class TrackingPayloadFactoryTest extends TestCase
 {
@@ -34,6 +35,13 @@ final class TrackingPayloadFactoryTest extends TestCase
         self::assertSame('https://example.test/current?variant=1', $payload->url);
         self::assertSame('https://example.test/current', $payload->groupingUrl());
         self::assertSame(1280, $payload->screenWidth);
+    }
+
+    public function testItDistinguishesUnsupportedRootTypesFromInvalidObjectFields(): void
+    {
+        $this->expectException(UnsupportedTrackingPayloadException::class);
+
+        (new TrackingPayloadFactory())->fromRequest(new Request(content: '[]'));
     }
 
     #[DataProvider('invalidPayloads')]

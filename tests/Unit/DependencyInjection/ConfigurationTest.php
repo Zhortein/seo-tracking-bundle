@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Zhortein\SeoTrackingBundle\Tests\Unit\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\Definition\Processor;
 use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
@@ -40,6 +41,10 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($consent);
         self::assertSame('seo-tracking:consent-granted', $consent['grant_event']);
         self::assertSame('seo-tracking:consent-revoked', $consent['revoke_event']);
+        $rateLimiter = $config['rate_limiter'];
+        self::assertIsArray($rateLimiter);
+        self::assertNull($rateLimiter['creation_limiter']);
+        self::assertNull($rateLimiter['closure_limiter']);
     }
 
     public function testRetentionPolicyCanBeConfigured(): void
@@ -72,5 +77,31 @@ final class ConfigurationTest extends TestCase
         self::assertIsArray($consent);
         self::assertSame('cmp:analytics-granted', $consent['grant_event']);
         self::assertSame('cmp:analytics-revoked', $consent['revoke_event']);
+    }
+
+    public function testRateLimiterServicesCanBeConfiguredIndependently(): void
+    {
+        $config = (new Processor())->processConfiguration(new Configuration(), [[
+            'rate_limiter' => [
+                'creation_limiter' => 'limiter.seo_tracking_creation',
+                'closure_limiter' => 'limiter.seo_tracking_closure',
+            ],
+        ]]);
+
+        $rateLimiter = $config['rate_limiter'];
+        self::assertIsArray($rateLimiter);
+        self::assertSame('limiter.seo_tracking_creation', $rateLimiter['creation_limiter']);
+        self::assertSame('limiter.seo_tracking_closure', $rateLimiter['closure_limiter']);
+    }
+
+    public function testRateLimiterServiceIdsCannotBeEmpty(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        (new Processor())->processConfiguration(new Configuration(), [[
+            'rate_limiter' => [
+                'creation_limiter' => ' ',
+            ],
+        ]]);
     }
 }

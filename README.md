@@ -122,6 +122,24 @@ document.dispatchEvent(new CustomEvent('seo-tracking:consent-revoked'));
 
 The checker also protects the tracking endpoint; revocation closes an existing hit but does not create a new one or erase historical data. See [`docs/consent.md`](docs/consent.md) for the service contract, configurable event names, CMP integration order and direct Stimulus usage.
 
+## Rate limiting
+
+Public creation and closure endpoints can independently use named Symfony RateLimiter policies. The integration is disabled by default and does not add a runtime dependency unless it is enabled. Rejected requests return HTTP `429` before parsing or database access, and the default bucket key is a SHA-256 hash of Symfony's resolved client IP.
+
+See [`docs/rate-limiting.md`](docs/rate-limiting.md) for installation, configuration, response headers, trusted-proxy guidance and replaceable service contracts.
+
+## Bot classification
+
+The default bot detector now returns an explainable, typed classification while persisting only the existing boolean flag. Applications can replace `BotClassifierInterface`; existing `BotDetectorInterface` replacements remain supported through an adapter. The classification is exposed on `PageCallTrackedEvent` and is never a visitor identity.
+
+See [`docs/bot-classification.md`](docs/bot-classification.md) for default categories, extension contracts, backward compatibility and privacy limitations.
+
+## Invalid request observability
+
+Malformed, unsupported, consent-denied, rate-limited and unknown-hit requests can be sent to a replaceable reporter without creating tracking rows or polluting statistics. The default reporter is a no-op. Its typed event exposes only bounded method/route/content metadata and never forwards the raw payload, IP address or User-Agent.
+
+See [`docs/invalid-events.md`](docs/invalid-events.md) for reason codes, a logger adapter and the fail-closed collection/fail-open reporting behavior.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).
@@ -187,6 +205,7 @@ class MyCustomListener
     {
         $pageCall = $event->getPageCall();
         $hit = $event->getPageCallHit();
+        $classification = $event->getBotClassification();
 
         // Example: export to your own system
         // or send it to a queue, or just log it
@@ -360,15 +379,15 @@ php bin/console zhortein:seo-tracking:purge
 
 The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
 
-## Upgrading to 1.4
+## Upgrading to 1.5
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.4
+composer require zhortein/seo-tracking-bundle:^1.5
 php bin/console asset-map:compile
 ```
 
-No Doctrine schema migration is required from 1.3. The new data-lifecycle operations are opt-in and tracking remains immediately enabled unless the application replaces the consent checker. Read the [1.4 upgrade procedure](docs/upgrade-1.4.md) before enabling backfill, retention or consent gating.
+No Doctrine schema migration is required from 1.4. Rate limiting remains disabled, the invalid-event reporter remains a no-op and existing bot-detector replacements remain supported. Read the [1.5 upgrade procedure](docs/upgrade-1.5.md) before enabling endpoint limits or exporting rejected-request telemetry.
 
 Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).

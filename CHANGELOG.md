@@ -10,6 +10,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.5.0] – 2026-07-26
+
+### Added
+
+- Disabled-by-default Symfony RateLimiter integration with independent hit-creation and hit-closure policies.
+- A replaceable, privacy-conscious rate-limit key resolver that hashes Symfony's resolved client IP by default.
+- Typed, explainable bot classifications with conservative search, social-preview, monitoring and crawler categories.
+- A replaceable bot classifier while preserving existing `BotDetectorInterface` integrations through an adapter.
+- Bot classification metadata on `PageCallTrackedEvent` without adding persisted fields.
+- A separate no-op-by-default invalid-event reporter with stable reasons and bounded safe metadata.
+- Dedicated documentation and functional coverage for rate limiting, bot classification and invalid-event observability.
+
+### Changed
+
+- Rate limiting is evaluated before consent and payload parsing when it is enabled.
+- Valid JSON whose root is not an object is distinguished from an object containing invalid fields.
+- The default bot detector recognizes additional common crawler families while remaining heuristic.
+- Rejected requests can be observed without creating hits or affecting SEO statistics.
+- CI aligns and tests Symfony Clock and RateLimiter across the supported Symfony matrix.
+
+### Migration
+
+- No Doctrine schema migration is required. See [`docs/upgrade-1.5.md`](docs/upgrade-1.5.md) for defaults, optional dependencies and rollout checks.
+
+---
+
 ## [1.4.0] – 2026-07-26
 
 ### Added

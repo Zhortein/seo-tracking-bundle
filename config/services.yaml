@@ -7,7 +7,9 @@ services:
     # Enregistrement automatique de tes classes
     Zhortein\SeoTrackingBundle\:
         resource: '../src/'
-        exclude: '../src/{DependencyInjection,Entity,Kernel.php}'
+        exclude:
+            - '../src/{DependencyInjection,Entity,Kernel.php}'
+            - '../src/Tracking/RateLimit/SymfonyTrackingRateLimiter.php'
 
     Zhortein\SeoTrackingBundle\Controller\PageCallController:
         arguments:
@@ -67,8 +69,20 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
 
+    Zhortein\SeoTrackingBundle\Tracking\Bot\BotClassifierInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorClassifier
+
     Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Consent\AllowAllTrackingConsentChecker
+
+    Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimitKeyResolverInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\RateLimit\ClientIpTrackingRateLimitKeyResolver
+
+    Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimiterInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\RateLimit\AllowAllTrackingRateLimiter
+
+    Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReporterInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\NullInvalidTrackingEventReporter
 
     Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
         arguments:
