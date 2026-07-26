@@ -321,6 +321,16 @@ The bundle exposes typed statistics independently from their presentation. A Boo
 
 For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
 
+## Historical grouping-key backfill
+
+Applications that upgraded from a version before 1.3 may have historical page calls whose `grouping_key` remains null. Inspect them without changing data:
+
+```bash
+php bin/console zhortein:seo-tracking:backfill-grouping-keys
+```
+
+Backfill and duplicate consolidation are always explicit. The command is resumable, processes bounded batches and refuses to guess how custom-entity fields should be merged. See [`docs/grouping-backfill.md`](docs/grouping-backfill.md) before using `--apply` or `--merge-duplicates`.
+
 ## Upgrading to 1.3
 
 Update the package with:
