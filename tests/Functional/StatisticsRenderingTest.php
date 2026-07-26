@@ -9,6 +9,8 @@ use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
@@ -27,8 +29,11 @@ final class StatisticsRenderingTest extends TestCase
             self::assertInstanceOf(ContainerInterface::class, $container);
             $entityManager = $container->get(EntityManagerInterface::class);
             $twig = $container->get(Environment::class);
+            $translator = $container->get(TranslatorInterface::class);
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(Environment::class, $twig);
+            self::assertInstanceOf(TranslatorInterface::class, $translator);
+            self::assertInstanceOf(LocaleAwareInterface::class, $translator);
 
             (new SchemaTool($entityManager))->createSchema([
                 $entityManager->getClassMetadata(PageCall::class),
@@ -61,9 +66,19 @@ final class StatisticsRenderingTest extends TestCase
             self::assertStringContainsString('Human hits', $html);
             self::assertStringContainsString('https://example.test/rendered', $html);
             self::assertStringContainsString('2026-07-10', $html);
+            self::assertStringContainsString('<figure', $html);
+            self::assertStringContainsString('role="progressbar"', $html);
+            self::assertStringContainsString('Daily page-call evolution data', $html);
             self::assertStringContainsString('Dimension: tenant', $html);
             self::assertStringContainsString('acme', $html);
             self::assertStringNotContainsStringIgnoringCase('unique visitor', $html);
+
+            $translator->setLocale('fr');
+            $french = $twig->createTemplate('{{ seo_tracking_statistics() }}')->render();
+            self::assertStringContainsString('Appels de pages', $french);
+            self::assertStringContainsString('Consultations humaines', $french);
+            self::assertStringContainsString('Évolution', $french);
+            self::assertStringContainsString('Dimension : tenant', $french);
         } finally {
             $kernel->shutdown();
         }

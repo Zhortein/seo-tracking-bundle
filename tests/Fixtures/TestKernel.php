@@ -60,6 +60,8 @@ class TestKernel extends Kernel
             'secret' => 'test',
             'test' => true,
             'router' => ['utf8' => true],
+            'default_locale' => 'en',
+            'translator' => ['fallbacks' => ['en']],
         ]);
         $container->loadFromExtension('doctrine', [
             'dbal' => $dbal,

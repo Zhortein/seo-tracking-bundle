@@ -1,0 +1,155 @@
+{% macro ranking(title, values) %}
+    {% set maximum = 1 %}
+    {% for value in values %}
+        {% if value.count > maximum %}
+            {% set maximum = value.count %}
+        {% endif %}
+    {% endfor %}
+
+    <section>
+        <h3>{{ title }}</h3>
+        <ol>
+            {% for value in values %}
+                {% set bounded_count = value.count < 0 ? 0 : (value.count > maximum ? maximum : value.count) %}
+                <li>
+                    <span>{{ value.label }}</span>
+                    <progress max="{{ maximum }}" value="{{ bounded_count }}">
+                        {{ 'statistics.hit_count'|trans({'%count%': value.count}, 'seo_tracking') }}
+                    </progress>
+                    <span>{{ 'statistics.hit_count'|trans({'%count%': value.count}, 'seo_tracking') }}</span>
+                </li>
+            {% else %}
+                <li>{{ 'statistics.no_data'|trans({}, 'seo_tracking') }}</li>
+            {% endfor %}
+        </ol>
+    </section>
+{% endmacro %}
+
+{% import _self as statistics %}
+
+<section class="seo-tracking-statistics" data-seo-tracking-statistics>
+    <h2>{{ 'statistics.title'|trans({}, 'seo_tracking') }}</h2>
+
+    {% block summary %}
+        <dl>
+            <div>
+                <dt>{{ 'statistics.page_calls'|trans({}, 'seo_tracking') }}</dt>
+                <dd>{{ report.summary.pageCalls }}</dd>
+            </div>
+            <div>
+                <dt>{{ 'statistics.human_hits'|trans({}, 'seo_tracking') }}</dt>
+                <dd>{{ report.summary.humanHits }}</dd>
+            </div>
+            <div>
+                <dt>{{ 'statistics.robot_hits'|trans({}, 'seo_tracking') }}</dt>
+                <dd>{{ report.summary.robotHits }}</dd>
+            </div>
+            <div>
+                <dt>{{ 'statistics.average_duration'|trans({}, 'seo_tracking') }}</dt>
+                <dd>
+                    {% if report.summary.averageDurationSeconds is null %}
+                        {{ 'statistics.duration_unavailable'|trans({}, 'seo_tracking') }}
+                    {% else %}
+                        {{ 'statistics.duration_seconds'|trans({'%duration%': report.summary.averageDurationSeconds|number_format(1)}, 'seo_tracking') }}
+                    {% endif %}
+                    <small>{{ 'statistics.duration_samples'|trans({'%count%': report.summary.durationSamples}, 'seo_tracking') }}</small>
+                </dd>
+            </div>
+            <div>
+                <dt>{{ 'statistics.median_duration'|trans({}, 'seo_tracking') }}</dt>
+                <dd>
+                    {% if report.summary.medianDurationSeconds is null %}
+                        {{ 'statistics.duration_unavailable'|trans({}, 'seo_tracking') }}
+                    {% else %}
+                        {{ 'statistics.duration_seconds'|trans({'%duration%': report.summary.medianDurationSeconds|number_format(1)}, 'seo_tracking') }}
+                    {% endif %}
+                </dd>
+            </div>
+        </dl>
+    {% endblock %}
+
+    {% block trend %}
+        {% set maximum = 1 %}
+        {% for point in report.trend %}
+            {% if point.hits > maximum %}
+                {% set maximum = point.hits %}
+            {% endif %}
+        {% endfor %}
+
+        <section>
+            <h2>{{ 'statistics.evolution'|trans({}, 'seo_tracking') }}</h2>
+            <figure aria-label="{{ 'statistics.evolution_chart'|trans({}, 'seo_tracking') }}">
+                <figcaption>{{ 'statistics.evolution_chart'|trans({}, 'seo_tracking') }}</figcaption>
+                <ol>
+                    {% for point in report.trend %}
+                        {% set bounded_hits = point.hits < 0 ? 0 : (point.hits > maximum ? maximum : point.hits) %}
+                        <li>
+                            <time datetime="{{ point.date|date('Y-m-d', report.filter.timezone.name) }}">
+                                {{ point.date|date('Y-m-d', report.filter.timezone.name) }}
+                            </time>
+                            <progress max="{{ maximum }}" value="{{ bounded_hits }}">
+                                {{ 'statistics.hit_count'|trans({'%count%': point.hits}, 'seo_tracking') }}
+                            </progress>
+                            <span>{{ 'statistics.hit_count'|trans({'%count%': point.hits}, 'seo_tracking') }}</span>
+                        </li>
+                    {% else %}
+                        <li>{{ 'statistics.no_data'|trans({}, 'seo_tracking') }}</li>
+                    {% endfor %}
+                </ol>
+            </figure>
+
+            <table>
+                <caption>{{ 'statistics.evolution_data'|trans({}, 'seo_tracking') }}</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">{{ 'statistics.date'|trans({}, 'seo_tracking') }}</th>
+                        <th scope="col">{{ 'statistics.page_calls'|trans({}, 'seo_tracking') }}</th>
+                        <th scope="col">{{ 'statistics.humans'|trans({}, 'seo_tracking') }}</th>
+                        <th scope="col">{{ 'statistics.robots'|trans({}, 'seo_tracking') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for point in report.trend %}
+                        <tr>
+                            <th scope="row">{{ point.date|date('Y-m-d', report.filter.timezone.name) }}</th>
+                            <td>{{ point.hits }}</td>
+                            <td>{{ point.humanHits }}</td>
+                            <td>{{ point.robotHits }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">{{ 'statistics.no_data'|trans({}, 'seo_tracking') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endblock %}
+
+    {% block rankings %}
+        <section>
+            <h2>{{ 'statistics.rankings'|trans({}, 'seo_tracking') }}</h2>
+            {{ statistics.ranking('statistics.top_pages'|trans({}, 'seo_tracking'), report.topPages) }}
+            {{ statistics.ranking('statistics.routes'|trans({}, 'seo_tracking'), report.routes) }}
+            {{ statistics.ranking('statistics.utm_sources'|trans({}, 'seo_tracking'), report.sources) }}
+            {{ statistics.ranking('statistics.utm_campaigns'|trans({}, 'seo_tracking'), report.campaigns) }}
+            {{ statistics.ranking('statistics.utm_media'|trans({}, 'seo_tracking'), report.mediums) }}
+            {{ statistics.ranking('statistics.page_types'|trans({}, 'seo_tracking'), report.pageTypes) }}
+            {{ statistics.ranking('statistics.languages'|trans({}, 'seo_tracking'), report.languages) }}
+        </section>
+    {% endblock %}
+
+    {% block dimensions %}
+        {% if report.dimensions is not empty %}
+            <section>
+                <h2>{{ 'statistics.custom_dimensions'|trans({}, 'seo_tracking') }}</h2>
+                {% for dimension in report.dimensions %}
+                    {{ statistics.ranking(
+                        'statistics.dimension'|trans({'%name%': dimension.name}, 'seo_tracking'),
+                        dimension.values,
+                    ) }}
+                {% endfor %}
+            </section>
+        {% endif %}
+    {% endblock %}
+</section>
