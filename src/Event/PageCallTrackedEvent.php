@@ -3,8 +3,8 @@
 namespace Zhortein\SeoTrackingBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
-use ZhorTein\SeoTrackingBundle\Entity\PageCall;
-use ZhorTein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Entity\PageCall;
+use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
 
 final class PageCallTrackedEvent extends Event
 {

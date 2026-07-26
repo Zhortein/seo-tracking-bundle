@@ -15,5 +15,9 @@
   },
   "peerDependencies": {
     "@hotwired/stimulus": "^3.0.0"
+  },
+  "scripts": {
+    "lint": "node --check dist/tracking_controller.js",
+    "test": "node --test tests/*.test.mjs"
   }
 }

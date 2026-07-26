@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    name: PHP ${{ matrix.php }} (${{ matrix.dependencies }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.3'
+            dependencies: lowest
+          - php: '8.4'
+            dependencies: stable
+          - php: '8.5'
+            dependencies: stable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ctype, dom, iconv, intl, json, mbstring, pdo_sqlite, tokenizer, xml, xmlwriter
+          coverage: none
+      - name: Validate Composer metadata
+        run: composer validate --strict --no-check-publish
+      - name: Install lowest dependencies
+        if: matrix.dependencies == 'lowest'
+        run: composer update --prefer-lowest --prefer-stable --no-interaction --no-progress
+      - name: Install stable dependencies
+        if: matrix.dependencies == 'stable'
+        run: composer update --prefer-stable --no-interaction --no-progress
+      - name: Run PHPUnit
+        run: composer test
+      - name: Run PHPStan
+        run: composer phpstan
+      - name: Check PHP coding standards
+        run: composer cs-check
+
+  javascript:
+    name: JavaScript (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['22', '24']
+    defaults:
+      run:
+        working-directory: assets
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run lint
+      - run: npm test
