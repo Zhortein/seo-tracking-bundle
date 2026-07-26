@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+---
+
+## [1.7.1] – 2026-07-26
+
 ### Fixed
 
 - Corrected the configuration tree root used by `config:dump-reference` to
