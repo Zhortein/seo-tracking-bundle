@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - IPv4 and IPv6 prefix anonymization through a replaceable service.
 - Canonical URL grouping while preserving the observed URL on each hit.
 - A deterministic non-null grouping key for newly tracked calls.
+- A typed statistics API with period, timezone, robot and page-type filters.
+- Reliable summaries, duration samples, top pages, UTM rankings, route/type/language breakdowns and daily evolution.
+- An optional, overrideable Bootstrap 5 Twig statistics theme.
 
 ### Fixed
 

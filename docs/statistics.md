@@ -1,0 +1,150 @@
+# Statistics API
+
+Statistics are split into four layers:
+
+1. `StatisticsDataSourceInterface` reads hit observations.
+2. `StatisticsProviderInterface` calculates a report.
+3. Typed DTOs expose the result.
+4. Twig renders a selected template.
+
+The default data source uses Doctrine and the configured hit entity class. The provider and DTOs do not depend on Twig or Bootstrap.
+
+## Reliable metrics
+
+The first API exposes only values supported by collected data:
+
+- page calls, counted from hit rows;
+- human and robot hits;
+- number of closed hits;
+- average and median duration, calculated only from closed hits with a non-negative duration;
+- top pages;
+- UTM sources, campaigns and media;
+- route, page type and language breakdowns;
+- daily evolution in the requested timezone.
+
+`durationSamples` states how many hits contribute to duration values. Open hits and legacy rows without a usable duration are excluded from average and median calculations.
+
+The bundle does **not** expose unique visitors. An anonymized IP and a session-local parent-hit link are not a sound, stable visitor identity.
+
+## PHP usage and filters
+
+Inject `StatisticsProviderInterface`:
+
+```php
+use Zhortein\SeoTrackingBundle\Statistics\Filter\StatisticsFilter;
+use Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface;
+
+final readonly class AnalyticsController
+{
+    public function __construct(
+        private StatisticsProviderInterface $statistics,
+    ) {
+    }
+
+    public function report(): array
+    {
+        $filter = new StatisticsFilter(
+            from: new \DateTimeImmutable('2026-07-01 00:00:00 UTC'),
+            to: new \DateTimeImmutable('2026-07-31 23:59:59 UTC'),
+            timezone: new \DateTimeZone('Europe/Paris'),
+            bot: false,
+            pageType: 'article',
+        );
+
+        $report = $this->statistics->report($filter, limit: 10);
+
+        return [
+            'pageCalls' => $report->summary->pageCalls,
+            'topPages' => $report->topPages,
+            'trend' => $report->trend,
+        ];
+    }
+}
+```
+
+Filter values:
+
+- `from` and `to` are inclusive instants;
+- `timezone` controls daily grouping and display;
+- `bot: null` includes all hits, `false` keeps humans, and `true` keeps robots;
+- `pageType` matches the generic page type sent by the tracker.
+
+The ranking limit must be between 1 and 100.
+
+## Twig usage
+
+Render an all-time report with the selected theme:
+
+```twig
+{{ seo_tracking_statistics() }}
+```
+
+Build the report separately and pass it to the renderer:
+
+```twig
+{% set report = seo_tracking_statistics_report(filter, 20) %}
+{{ seo_tracking_statistics(report) }}
+```
+
+Or select a template for one render:
+
+```twig
+{{ seo_tracking_statistics(report, 'analytics/report.html.twig') }}
+```
+
+Every template receives one variable named `report`, containing `StatisticsReport`.
+
+## Theme selection and overrides
+
+Bootstrap 5 is the default presentation theme:
+
+```yaml
+# config/packages/zhortein_seo_tracking.yaml
+zhortein_seo_tracking:
+    statistics:
+        theme: bootstrap5
+```
+
+The theme only emits Bootstrap class names; it does not install Bootstrap or any JavaScript dependency.
+
+Use an application template:
+
+```yaml
+zhortein_seo_tracking:
+    statistics:
+        template: 'analytics/statistics.html.twig'
+```
+
+Disable the supplied theme while keeping the provider and report Twig function:
+
+```yaml
+zhortein_seo_tracking:
+    statistics:
+        theme: none
+```
+
+With `theme: none`, pass a template to `seo_tracking_statistics()` or use `seo_tracking_statistics_report()` and render it yourself. Calling the renderer without any template raises a clear exception.
+
+The bundled template can also be overridden at:
+
+```text
+templates/bundles/ZhorteinSeoTrackingBundle/statistics/bootstrap5/report.html.twig
+```
+
+It defines `summary`, `trend` and `rankings` blocks for targeted overrides.
+
+## Custom entities and data sources
+
+Configured entities using `PageCallTrait` and `PageCallHitTrait` work without extra setup. A custom mapping that deliberately renames or omits the historical fields can replace the data source:
+
+```yaml
+services:
+    App\Analytics\StatisticsDataSource: ~
+
+    Zhortein\SeoTrackingBundle\Statistics\DataSource\StatisticsDataSourceInterface:
+        alias: App\Analytics\StatisticsDataSource
+```
+
+Return `HitObservation` objects after applying the supplied `StatisticsFilter`. The standard provider, DTOs and Twig theme remain reusable.
+
+The default implementation streams Doctrine scalar rows and aggregates them in PHP for database portability. For very large datasets, replace the data source with database-specific pre-aggregation while retaining the public report API.
