@@ -82,12 +82,16 @@ final readonly class HitRetentionPurger implements HitRetentionPurgerInterface
                     ->getQuery()
                     ->execute();
 
-                $batchPurgedHits = (int) $entityManager->createQueryBuilder()
+                $deleteResult = $entityManager->createQueryBuilder()
                     ->delete($this->pageCallHitClass, 'hit')
                     ->where(sprintf('hit.%s IN (:hitIds)', $hitIdentifier))
                     ->setParameter('hitIds', $hitIds)
                     ->getQuery()
                     ->execute();
+                if (!is_int($deleteResult)) {
+                    throw new \LogicException('Doctrine did not return an affected-row count for the retention deletion.');
+                }
+                $batchPurgedHits = $deleteResult;
                 $batchRemovedPageCalls = 0;
 
                 foreach ($pageCallIds as $pageCallId) {
