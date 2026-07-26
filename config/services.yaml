@@ -101,6 +101,16 @@ services:
     Zhortein\SeoTrackingBundle\Statistics\StatisticsProviderInterface:
         alias: Zhortein\SeoTrackingBundle\Statistics\StatisticsProvider
 
+    Zhortein\SeoTrackingBundle\Journey\DataSource\DoctrineJourneyDataSource:
+        arguments:
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\Journey\DataSource\JourneyDataSourceInterface:
+        alias: Zhortein\SeoTrackingBundle\Journey\DataSource\DoctrineJourneyDataSource
+
+    Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface:
+        alias: Zhortein\SeoTrackingBundle\Journey\JourneyProvider
+
     Zhortein\SeoTrackingBundle\Statistics\Twig\StatisticsRuntime:
         arguments:
             $defaultTemplate: '%zhortein_seo_tracking.statistics.template%'
