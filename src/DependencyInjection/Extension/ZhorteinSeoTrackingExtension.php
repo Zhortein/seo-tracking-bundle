@@ -16,6 +16,8 @@ use Zhortein\SeoTrackingBundle\DependencyInjection\Configuration;
 use Zhortein\SeoTrackingBundle\DTO\SeoTrackingOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHitInterface;
 use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
+use Zhortein\SeoTrackingBundle\Statistics\Cache\Psr6StatisticsReportCache;
+use Zhortein\SeoTrackingBundle\Statistics\Cache\StatisticsReportCacheInterface;
 use Zhortein\SeoTrackingBundle\Tracking\RateLimit\SymfonyTrackingRateLimiter;
 use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimiterInterface;
 use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimitKeyResolverInterface;
@@ -53,6 +55,9 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $container->setParameter('zhortein_seo_tracking.tracking_url', $this->optionalString($config['tracking_url'] ?? null, 'tracking_url'));
         $container->setParameter('zhortein_seo_tracking.exit_url', $this->optionalString($config['exit_url'] ?? null, 'exit_url'));
         $container->setParameter('zhortein_seo_tracking.statistics.template', $this->statisticsTemplate($config['statistics'] ?? null));
+        $statisticsCache = $this->statisticsCache($config['statistics'] ?? null);
+        $container->setParameter('zhortein_seo_tracking.statistics.cache_ttl', $statisticsCache['ttl']);
+        $this->configureStatisticsCache($container, $statisticsCache['pool']);
         $retention = $this->retention($config['retention'] ?? null);
         $container->setParameter('zhortein_seo_tracking.retention.days', $retention['days']);
         $container->setParameter('zhortein_seo_tracking.retention.batch_size', $retention['batch_size']);
@@ -173,6 +178,42 @@ YAML);
         return 'bootstrap5' === ($statistics['theme'] ?? null)
             ? '@ZhorteinSeoTracking/statistics/bootstrap5/report.html.twig'
             : null;
+    }
+
+    /**
+     * @return array{pool: ?string, ttl: int}
+     */
+    private function statisticsCache(mixed $statistics): array
+    {
+        if (!is_array($statistics) || !is_array($statistics['cache'] ?? null)) {
+            throw new \LogicException('The "statistics.cache" option must be an array.');
+        }
+
+        $cache = $statistics['cache'];
+        $pool = $cache['pool'] ?? null;
+        $ttl = $cache['ttl'] ?? null;
+        if ((null !== $pool && !is_string($pool)) || !is_int($ttl)) {
+            throw new \LogicException('Invalid statistics cache configuration.');
+        }
+
+        if ((null === $pool && 0 !== $ttl) || (null !== $pool && $ttl < 1)) {
+            throw new \LogicException('Configure both a statistics cache pool and a positive TTL, or disable both.');
+        }
+
+        return ['pool' => $pool, 'ttl' => $ttl];
+    }
+
+    private function configureStatisticsCache(ContainerBuilder $container, ?string $pool): void
+    {
+        if (null === $pool) {
+            return;
+        }
+
+        $container->setDefinition(Psr6StatisticsReportCache::class, new Definition(
+            Psr6StatisticsReportCache::class,
+            [new Reference($pool)],
+        ));
+        $container->setAlias(StatisticsReportCacheInterface::class, Psr6StatisticsReportCache::class);
     }
 
     /**

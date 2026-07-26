@@ -414,3 +414,5 @@ php bin/console asset-map:compile
 A nullable Doctrine JSON column is required for dimensions when the default hit entity or `PageCallHitTrait` is used. Existing rows need no backfill. Read the [1.6 upgrade procedure](docs/upgrade-1.6.md) for migration-first deployment, custom entities, verification and rollback.
 
 Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).
+
+For large administrative listings and repeated reports, see [statistics pagination and cache](docs/statistics-performance.md). Both features are opt-in at the application boundary; report caching remains disabled unless a PSR-6 pool and TTL are configured.

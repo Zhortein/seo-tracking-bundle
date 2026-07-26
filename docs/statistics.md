@@ -159,3 +159,11 @@ services:
 Return `HitObservation` objects after applying the supplied `StatisticsFilter`, including all exact dimension matches. Populate the observation's optional `dimensions` argument to expose dimension rankings. The standard provider, DTOs and Twig theme remain reusable.
 
 The default implementation streams Doctrine scalar rows and aggregates them in PHP for database portability. For very large datasets, replace the data source with database-specific pre-aggregation while retaining the public report API.
+
+## Pagination and cache
+
+For administrative hit listings, `ObservationBrowserInterface` exposes bounded offset pages over the same filtered observation stream. It stops after the requested page plus one look-ahead item and returns explicit `hasMore` and `nextOffset()` information.
+
+Aggregate report caching is disabled by default. Applications can configure a PSR-6 pool and positive TTL; cache keys cover every filter field, scalar dimension type, timezone and ranking limit. Optional cache failures are fail-open.
+
+Read [statistics pagination and cache](statistics-performance.md) for configuration, performance boundaries, privacy considerations and replacement contracts.
