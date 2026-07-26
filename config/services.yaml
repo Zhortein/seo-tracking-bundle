@@ -69,6 +69,9 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
 
+    Zhortein\SeoTrackingBundle\Tracking\Bot\BotClassifierInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorClassifier
+
     Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Consent\AllowAllTrackingConsentChecker
 
