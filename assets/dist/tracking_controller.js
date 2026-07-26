@@ -17,6 +17,7 @@ export default class extends Controller {
         consentGranted: { type: Boolean, default: true },
         consentGrantEvent: { type: String, default: DEFAULT_CONSENT_GRANT_EVENT },
         consentRevokeEvent: { type: String, default: DEFAULT_CONSENT_REVOKE_EVENT },
+        dimensions: { type: Object, default: {} },
     };
 
     activeHitId = null;
@@ -128,6 +129,7 @@ export default class extends Controller {
             parentHitId: previousHitId,
             title: document.title || null,
             type: this.typeValue || 'generic',
+            dimensions: this.dimensionsValue ?? {},
         };
 
         this.trackPromise = fetch(this.trackingUrlValue || DEFAULT_TRACKING_URL, {

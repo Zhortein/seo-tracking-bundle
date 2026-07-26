@@ -22,6 +22,7 @@ final class TrackingPayloadFactoryTest extends TestCase
         self::assertSame($payload->url, $payload->groupingUrl());
         self::assertNull($payload->source);
         self::assertNull($payload->screenWidth);
+        self::assertNull($payload->dimensions);
     }
 
     public function testCanonicalUrlBecomesTheGroupingUrlWithoutLosingTheObservedUrl(): void
@@ -30,11 +31,19 @@ final class TrackingPayloadFactoryTest extends TestCase
             'url' => 'https://example.test/current?variant=1',
             'canonicalUrl' => 'https://example.test/current',
             'screen' => ['width' => 1280, 'height' => 720],
+            'dimensions' => [
+                'plan' => 'professional',
+                'authenticated' => true,
+            ],
         ], JSON_THROW_ON_ERROR)));
 
         self::assertSame('https://example.test/current?variant=1', $payload->url);
         self::assertSame('https://example.test/current', $payload->groupingUrl());
         self::assertSame(1280, $payload->screenWidth);
+        self::assertSame([
+            'authenticated' => true,
+            'plan' => 'professional',
+        ], $payload->dimensions);
     }
 
     public function testItDistinguishesUnsupportedRootTypesFromInvalidObjectFields(): void
@@ -66,5 +75,7 @@ final class TrackingPayloadFactoryTest extends TestCase
         yield 'relative URL' => ['{"url":"/relative"}'];
         yield 'invalid screen' => ['{"url":"https://example.test","screen":"wide"}'];
         yield 'invalid optional type' => ['{"url":"https://example.test","campaign":12}'];
+        yield 'nested dimensions' => ['{"url":"https://example.test","dimensions":{"tenant":{"id":12}}}'];
+        yield 'dimension list' => ['{"url":"https://example.test","dimensions":["tenant"]}'];
     }
 }

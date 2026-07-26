@@ -120,6 +120,7 @@ function createHarness({
         consentGrantedValue: consentGranted,
         consentGrantEventValue: 'seo-tracking:consent-granted',
         consentRevokeEventValue: 'seo-tracking:consent-revoked',
+        dimensionsValue: { plan: 'professional', authenticated: true },
         exitUrlValue: '/custom/exit',
         routeArgsValue: { slug: 'first' },
         routeValue: 'page_show',
@@ -157,6 +158,7 @@ test('configurable endpoints, canonical URL and listeners work without duplicati
     const payload = JSON.parse(harness.fetchCalls[0].options.body);
     assert.equal(payload.canonicalUrl, 'https://example.test/canonical');
     assert.equal(payload.source, 'newsletter');
+    assert.deepEqual(payload.dimensions, { plan: 'professional', authenticated: true });
     assert.equal(harness.document.listenerCount('visibilitychange'), 1);
     assert.equal(harness.document.listenerCount('turbo:load'), 1);
 

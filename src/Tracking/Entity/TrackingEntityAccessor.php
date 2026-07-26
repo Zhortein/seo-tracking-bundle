@@ -71,6 +71,7 @@ class TrackingEntityAccessor
         $this->invoke($hit, 'setScreenWidth', $payload->screenWidth);
         $this->invoke($hit, 'setScreenHeight', $payload->screenHeight);
         $this->invoke($hit, 'setBot', $bot);
+        $this->invokeIfSupported($hit, 'setDimensions', $payload->dimensions);
     }
 
     public function setParentHit(PageCallHitInterface $hit, PageCallHitInterface $parentHit): void
