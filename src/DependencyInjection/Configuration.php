@@ -52,6 +52,8 @@ class Configuration implements ConfigurationInterface
                             ->integerNode('ipv6_prefix')->min(0)->max(128)->defaultValue(64)->end()
                         ->end()
                     ->end()
+                    ->scalarNode('tracking_url')->defaultNull()->end()
+                    ->scalarNode('exit_url')->defaultNull()->end()
                     ->booleanNode('easylyse_enabled')->defaultValue(false)->end()
                     ->scalarNode('easylyse_api_key')->defaultValue('')->end()
                     ->scalarNode('easylyse_api_page_call_endpoint')->defaultValue('https://www.easylyse.fr/fr/api/seo/hit')->end()

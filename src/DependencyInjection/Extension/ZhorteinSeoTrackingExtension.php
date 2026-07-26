@@ -45,6 +45,8 @@ class ZhorteinSeoTrackingExtension extends Extension implements PrependExtension
         $container->setParameter('zhortein_seo_tracking.page_call_hit_class', $pageCallHitClass);
         $container->setParameter('zhortein_seo_tracking.anonymization.ipv4_prefix', $ipv4Prefix);
         $container->setParameter('zhortein_seo_tracking.anonymization.ipv6_prefix', $ipv6Prefix);
+        $container->setParameter('zhortein_seo_tracking.tracking_url', $this->optionalString($config['tracking_url'] ?? null, 'tracking_url'));
+        $container->setParameter('zhortein_seo_tracking.exit_url', $this->optionalString($config['exit_url'] ?? null, 'exit_url'));
 
         $def = new Definition(SeoTrackingOptions::class, [
             $config['easylyse_api_page_call_endpoint'] ?? null,
@@ -128,5 +130,14 @@ YAML);
         $frameworkBundle = $container->getParameter('kernel.bundles_metadata')['FrameworkBundle'] ?? null;
 
         return $frameworkBundle && is_file($frameworkBundle['path'].'/Resources/config/asset_mapper.php');
+    }
+
+    private function optionalString(mixed $value, string $option): ?string
+    {
+        if (null === $value || is_string($value)) {
+            return $value;
+        }
+
+        throw new \LogicException(sprintf('The "%s" option must be a string or null.', $option));
     }
 }

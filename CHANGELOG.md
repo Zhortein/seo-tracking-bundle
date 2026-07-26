@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Configurable factories for `PageCallInterface` and `PageCallHitInterface`.
+- Configurable tracking and exit URLs, with route-generated defaults.
 - IPv4 and IPv6 prefix anonymization through a replaceable service.
 - Canonical URL grouping while preserving the observed URL on each hit.
 - A deterministic non-null grouping key for newly tracked calls.
@@ -20,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Configured entity classes are now used by repositories, creation, exit handling and events.
 - Malformed JSON, missing optional fields and absent user agents return controlled responses.
 - Hit closure is idempotent.
+- Stimulus/Turbo lifecycle handling closes hits once, avoids duplicate listeners and starts a new hit when a hidden page becomes visible again.
+- Exit delivery falls back to `fetch(..., {keepalive: true})` when `sendBeacon()` is missing or refuses the payload.
+- The distributed Stimulus controller is valid JavaScript.
 - The ineffective nullable UTM composite uniqueness constraint is replaced by a grouping-key constraint.
 - The PHPStan baseline was removed after fixing the audited errors.
 
