@@ -111,6 +111,17 @@ Tracked data includes:
 
 If JavaScript or `fetch()` is unavailable, the page continues normally and no client-side hit is created.
 
+## Consent integration
+
+The default remains immediate tracking for backward compatibility. Applications can replace a server-side checker and use generic grant/revoke browser events without copying the Twig helper or Stimulus controller:
+
+```javascript
+document.dispatchEvent(new CustomEvent('seo-tracking:consent-granted'));
+document.dispatchEvent(new CustomEvent('seo-tracking:consent-revoked'));
+```
+
+The checker also protects the tracking endpoint; revocation closes an existing hit but does not create a new one or erase historical data. See [`docs/consent.md`](docs/consent.md) for the service contract, configurable event names, CMP integration order and direct Stimulus usage.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).
@@ -321,12 +332,43 @@ The bundle exposes typed statistics independently from their presentation. A Boo
 
 For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
 
-## Upgrading to 1.3
+## Historical grouping-key backfill
+
+Applications that upgraded from a version before 1.3 may have historical page calls whose `grouping_key` remains null. Inspect them without changing data:
+
+```bash
+php bin/console zhortein:seo-tracking:backfill-grouping-keys
+```
+
+Backfill and duplicate consolidation are always explicit. The command is resumable, processes bounded batches and refuses to guess how custom-entity fields should be merged. See [`docs/grouping-backfill.md`](docs/grouping-backfill.md) before using `--apply` or `--merge-duplicates`.
+
+## Tracking-data retention
+
+Retention is opt-in and every purge is a dry-run unless `--apply` is supplied:
+
+```yaml
+zhortein_seo_tracking:
+    retention:
+        days: 180
+        batch_size: 500
+        remove_empty_page_calls: false
+```
+
+```bash
+php bin/console zhortein:seo-tracking:purge
+```
+
+The purger leaves undated hits untouched and recomputes page-call aggregates from surviving hits. See [`docs/retention.md`](docs/retention.md) for absolute cutoffs, scheduling, empty-group handling, custom entities and rollback.
+
+## Upgrading to 1.4
 
 Update the package with:
 
 ```bash
-composer require zhortein/seo-tracking-bundle:^1.3
+composer require zhortein/seo-tracking-bundle:^1.4
+php bin/console asset-map:compile
 ```
 
-The default entity schema changes in 1.3. Generate and review a Doctrine migration before deploying the new code. The safe rollout, exact checks and rollback constraints are documented in [`docs/upgrade-1.3.md`](docs/upgrade-1.3.md).
+No Doctrine schema migration is required from 1.3. The new data-lifecycle operations are opt-in and tracking remains immediately enabled unless the application replaces the consent checker. Read the [1.4 upgrade procedure](docs/upgrade-1.4.md) before enabling backfill, retention or consent gating.
+
+Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).

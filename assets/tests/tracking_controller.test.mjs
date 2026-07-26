@@ -31,7 +31,12 @@ class FakeEventTarget {
     }
 }
 
-function createHarness({ canonicalHref = null, deferredTrack = false, sendBeacon = true } = {}) {
+function createHarness({
+    canonicalHref = null,
+    consentGranted = true,
+    deferredTrack = false,
+    sendBeacon = true,
+} = {}) {
     const documentTarget = new FakeEventTarget();
     const windowTarget = new FakeEventTarget();
     const storage = new Map();
@@ -67,6 +72,7 @@ function createHarness({ canonicalHref = null, deferredTrack = false, sendBeacon
     const sessionStorage = {
         getItem: (key) => storage.get(key) ?? null,
         setItem: (key, value) => storage.set(key, String(value)),
+        removeItem: (key) => storage.delete(key),
     };
     const fetch = (url, options) => {
         fetchCalls.push({ url, options });
@@ -111,6 +117,9 @@ function createHarness({ canonicalHref = null, deferredTrack = false, sendBeacon
     const controller = new context.TrackingController();
     Object.assign(controller, {
         canonicalUrlValue: '',
+        consentGrantedValue: consentGranted,
+        consentGrantEventValue: 'seo-tracking:consent-granted',
+        consentRevokeEventValue: 'seo-tracking:consent-revoked',
         exitUrlValue: '/custom/exit',
         routeArgsValue: { slug: 'first' },
         routeValue: 'page_show',
@@ -209,4 +218,46 @@ test('a page hidden before the tracking response is still closed', async () => {
     await harness.controller.trackPromise;
 
     assert.equal(harness.beaconCalls.length, 1);
+});
+
+test('pending consent blocks tracking until grant and revocation closes the active hit', async () => {
+    const harness = createHarness({ consentGranted: false });
+
+    harness.controller.connect();
+    await Promise.resolve();
+    assert.equal(harness.fetchCalls.length, 0);
+    assert.equal(harness.document.listenerCount('seo-tracking:consent-granted'), 1);
+    assert.equal(harness.document.listenerCount('seo-tracking:consent-revoked'), 1);
+
+    harness.document.dispatch('seo-tracking:consent-granted');
+    harness.document.dispatch('seo-tracking:consent-granted');
+    await harness.controller.trackPromise;
+    assert.equal(harness.fetchCalls.filter((call) => !call.options.keepalive).length, 1);
+
+    harness.document.dispatch('seo-tracking:consent-revoked');
+    harness.document.dispatch('seo-tracking:consent-revoked');
+    assert.equal(harness.beaconCalls.length, 1);
+
+    harness.document.dispatch('turbo:load');
+    harness.document.visibilityState = 'hidden';
+    harness.document.dispatch('visibilitychange');
+    harness.document.visibilityState = 'visible';
+    harness.document.dispatch('visibilitychange');
+    await Promise.resolve();
+    assert.equal(harness.fetchCalls.filter((call) => !call.options.keepalive).length, 1);
+
+    harness.controller.disconnect();
+    harness.controller.connect();
+    await Promise.resolve();
+    assert.equal(harness.fetchCalls.filter((call) => !call.options.keepalive).length, 1);
+
+    harness.document.dispatch('seo-tracking:consent-granted');
+    await harness.controller.trackPromise;
+    assert.equal(harness.fetchCalls.filter((call) => !call.options.keepalive).length, 2);
+    const secondPayload = JSON.parse(harness.fetchCalls.filter((call) => !call.options.keepalive)[1].options.body);
+    assert.equal(secondPayload.parentHitId, null);
+
+    harness.controller.disconnect();
+    assert.equal(harness.document.listenerCount('seo-tracking:consent-granted'), 0);
+    assert.equal(harness.document.listenerCount('seo-tracking:consent-revoked'), 0);
 });

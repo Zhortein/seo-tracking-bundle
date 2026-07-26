@@ -31,6 +31,31 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGeneratorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Grouping\PageCallGroupingKeyGenerator
 
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\HistoricalGroupingKeyBackfiller:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DefaultEntityDuplicatePageCallMerger:
+        arguments:
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DuplicatePageCallMergerInterface:
+        alias: Zhortein\SeoTrackingBundle\DataLifecycle\Grouping\DefaultEntityDuplicatePageCallMerger
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPolicy:
+        arguments:
+            $days: '%zhortein_seo_tracking.retention.days%'
+            $batchSize: '%zhortein_seo_tracking.retention.batch_size%'
+            $removeEmptyPageCalls: '%zhortein_seo_tracking.retention.remove_empty_page_calls%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger:
+        arguments:
+            $pageCallClass: '%zhortein_seo_tracking.page_call_class%'
+            $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'
+
+    Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurgerInterface:
+        alias: Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger
+
     Zhortein\SeoTrackingBundle\Tracking\Ip\IpAnonymizer:
         arguments:
             $ipv4Prefix: '%zhortein_seo_tracking.anonymization.ipv4_prefix%'
@@ -42,10 +67,15 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\Bot\RegexBotDetector
 
+    Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\Consent\AllowAllTrackingConsentChecker
+
     Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
         arguments:
             $trackingUrl: '%zhortein_seo_tracking.tracking_url%'
             $exitUrl: '%zhortein_seo_tracking.exit_url%'
+            $consentGrantEvent: '%zhortein_seo_tracking.consent.grant_event%'
+            $consentRevokeEvent: '%zhortein_seo_tracking.consent.revoke_event%'
 
     Zhortein\SeoTrackingBundle\Statistics\DataSource\DoctrineStatisticsDataSource:
         arguments:

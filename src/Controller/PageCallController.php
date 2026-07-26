@@ -15,6 +15,7 @@ use Zhortein\SeoTrackingBundle\Entity\PageCallInterface;
 use Zhortein\SeoTrackingBundle\Event\PageCallExitEvent;
 use Zhortein\SeoTrackingBundle\Event\PageCallTrackedEvent;
 use Zhortein\SeoTrackingBundle\Tracking\Bot\BotDetectorInterface;
+use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
 use Zhortein\SeoTrackingBundle\Tracking\Entity\TrackingEntityAccessor;
 use Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallFactoryInterface;
 use Zhortein\SeoTrackingBundle\Tracking\Factory\PageCallHitFactoryInterface;
@@ -39,12 +40,17 @@ class PageCallController extends AbstractController
         private readonly IpAnonymizerInterface $ipAnonymizer,
         private readonly BotDetectorInterface $botDetector,
         private readonly TrackingEntityAccessor $entityAccessor,
+        private readonly TrackingConsentCheckerInterface $consentChecker,
     ) {
     }
 
     #[Route('/page-call/track', name: 'page_call_track', methods: ['POST'])]
     public function track(Request $request, EntityManagerInterface $em, EventDispatcherInterface $dispatcher): JsonResponse
     {
+        if (!$this->consentChecker->isGranted($request)) {
+            return new JsonResponse(['error' => 'Tracking consent is required'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
         try {
             $payload = $this->payloadFactory->fromRequest($request);
         } catch (\JsonException|\InvalidArgumentException $exception) {

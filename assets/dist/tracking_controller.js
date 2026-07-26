@@ -3,6 +3,8 @@ import { Controller } from '@hotwired/stimulus';
 const DEFAULT_TRACKING_URL = '/zhortein/seo-tracking/page-call/track';
 const DEFAULT_EXIT_URL = '/zhortein/seo-tracking/page-call/exit';
 const HIT_STORAGE_KEY = 'page-call-hit-id';
+const DEFAULT_CONSENT_GRANT_EVENT = 'seo-tracking:consent-granted';
+const DEFAULT_CONSENT_REVOKE_EVENT = 'seo-tracking:consent-revoked';
 
 export default class extends Controller {
     static values = {
@@ -12,6 +14,9 @@ export default class extends Controller {
         canonicalUrl: { type: String, default: '' },
         trackingUrl: { type: String, default: DEFAULT_TRACKING_URL },
         exitUrl: { type: String, default: DEFAULT_EXIT_URL },
+        consentGranted: { type: Boolean, default: true },
+        consentGrantEvent: { type: String, default: DEFAULT_CONSENT_GRANT_EVENT },
+        consentRevokeEvent: { type: String, default: DEFAULT_CONSENT_REVOKE_EVENT },
     };
 
     activeHitId = null;
@@ -21,11 +26,20 @@ export default class extends Controller {
     listenersAttached = false;
     trackPromise = null;
     closedHitIds = new Set();
+    trackingAllowed = true;
+    attachedConsentGrantEvent = null;
+    attachedConsentRevokeEvent = null;
 
     connect() {
         this.connected = true;
+        this.trackingAllowed = this.consentGrantedValue;
+        if (!this.trackingAllowed) {
+            this.clearStoredParentHit();
+        }
         this.attachListeners();
-        void this.trackCurrentPage();
+        if (this.trackingAllowed) {
+            void this.trackCurrentPage();
+        }
     }
 
     disconnect() {
@@ -45,6 +59,10 @@ export default class extends Controller {
         document.addEventListener('turbo:before-cache', this.onTurboBeforePageChange);
         document.addEventListener('turbo:load', this.onTurboLoad);
         window.addEventListener('pagehide', this.onPageHide);
+        this.attachedConsentGrantEvent = this.consentGrantEventValue || DEFAULT_CONSENT_GRANT_EVENT;
+        this.attachedConsentRevokeEvent = this.consentRevokeEventValue || DEFAULT_CONSENT_REVOKE_EVENT;
+        document.addEventListener(this.attachedConsentGrantEvent, this.onConsentGranted);
+        document.addEventListener(this.attachedConsentRevokeEvent, this.onConsentRevoked);
         this.listenersAttached = true;
     }
 
@@ -59,10 +77,22 @@ export default class extends Controller {
         document.removeEventListener('turbo:before-cache', this.onTurboBeforePageChange);
         document.removeEventListener('turbo:load', this.onTurboLoad);
         window.removeEventListener('pagehide', this.onPageHide);
+        if (this.attachedConsentGrantEvent) {
+            document.removeEventListener(this.attachedConsentGrantEvent, this.onConsentGranted);
+        }
+        if (this.attachedConsentRevokeEvent) {
+            document.removeEventListener(this.attachedConsentRevokeEvent, this.onConsentRevoked);
+        }
+        this.attachedConsentGrantEvent = null;
+        this.attachedConsentRevokeEvent = null;
         this.listenersAttached = false;
     }
 
     async trackCurrentPage() {
+        if (!this.trackingAllowed) {
+            return null;
+        }
+
         const url = window.location.href;
         if (this.trackPromise || (this.activeHitId && this.lastTrackedUrl === url)) {
             return this.trackPromise;
@@ -152,6 +182,14 @@ export default class extends Controller {
         return document.querySelector('link[rel="canonical"]')?.href || null;
     }
 
+    clearStoredParentHit() {
+        try {
+            sessionStorage.removeItem(HIT_STORAGE_KEY);
+        } catch (error) {
+            console.warn('SEO tracking could not clear its session state.', error);
+        }
+    }
+
     closeCurrentHit() {
         if (!this.activeHitId) {
             this.closeRequested = null !== this.trackPromise;
@@ -218,5 +256,20 @@ export default class extends Controller {
 
     onPageHide = () => {
         this.closeCurrentHit();
+    };
+
+    onConsentGranted = () => {
+        this.trackingAllowed = true;
+        this.consentGrantedValue = true;
+        if (this.connected && 'hidden' !== document.visibilityState) {
+            void this.trackCurrentPage();
+        }
+    };
+
+    onConsentRevoked = () => {
+        this.trackingAllowed = false;
+        this.consentGrantedValue = false;
+        this.closeCurrentHit();
+        this.clearStoredParentHit();
     };
 }
