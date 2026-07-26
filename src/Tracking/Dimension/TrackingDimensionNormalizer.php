@@ -32,10 +32,7 @@ final readonly class TrackingDimensionNormalizer
         $normalized = [];
         foreach ($value as $key => $dimension) {
             if (!is_string($key) || 1 !== preg_match('/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/D', $key)) {
-                throw new \InvalidArgumentException(sprintf(
-                    'Dimension keys must start with an ASCII letter and contain at most %d letters, digits, dots, underscores or hyphens.',
-                    self::MAX_KEY_LENGTH,
-                ));
+                throw new \InvalidArgumentException(sprintf('Dimension keys must start with an ASCII letter and contain at most %d letters, digits, dots, underscores or hyphens.', self::MAX_KEY_LENGTH));
             }
 
             if (is_string($dimension)) {

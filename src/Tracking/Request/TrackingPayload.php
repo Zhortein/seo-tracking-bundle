@@ -7,7 +7,7 @@ namespace Zhortein\SeoTrackingBundle\Tracking\Request;
 final readonly class TrackingPayload
 {
     /**
-     * @param array<string, mixed>|null $routeArgs
+     * @param array<string, mixed>|null                 $routeArgs
      * @param array<string, string|int|float|bool>|null $dimensions
      */
     public function __construct(
