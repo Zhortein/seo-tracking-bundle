@@ -351,6 +351,12 @@ The bundle exposes typed statistics independently from their presentation. A Boo
 
 For controller-side filters, custom templates, theme disabling and the complete list of deliberately supported metrics, see [`docs/statistics.md`](docs/statistics.md).
 
+## Journey reports
+
+The typed journey API reconstructs bounded path fragments and transition counts from persisted `parentHit` links. It can include an immediate predecessor outside the selected period to preserve boundary context, while clearly marking that step as outside the filter.
+
+These fragments are not visitors, devices or stable sessions. Retention, consent changes and browser session storage can all start or cut a fragment. See [`docs/journeys.md`](docs/journeys.md) for filter semantics, limits, privacy guidance and data-source replacement.
+
 ## Historical grouping-key backfill
 
 Applications that upgraded from a version before 1.3 may have historical page calls whose `grouping_key` remains null. Inspect them without changing data:

@@ -18,6 +18,7 @@ use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\HitRetentionPurger;
 use Zhortein\SeoTrackingBundle\DataLifecycle\Retention\RetentionPurgeOptions;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Journey\JourneyProviderInterface;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\TestKernel;
 
 final class DatabaseSchemaCompatibilityTest extends TestCase
@@ -38,11 +39,13 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
             $dispatcher = $container->get(EventDispatcherInterface::class);
             $backfiller = $container->get(HistoricalGroupingKeyBackfiller::class);
             $purger = $container->get(HitRetentionPurger::class);
+            $journeys = $container->get(JourneyProviderInterface::class);
             self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
             self::assertInstanceOf(PageCallController::class, $controller);
             self::assertInstanceOf(EventDispatcherInterface::class, $dispatcher);
             self::assertInstanceOf(HistoricalGroupingKeyBackfiller::class, $backfiller);
             self::assertInstanceOf(HitRetentionPurger::class, $purger);
+            self::assertInstanceOf(JourneyProviderInterface::class, $journeys);
 
             $metadata = [
                 $entityManager->getClassMetadata(PageCall::class),
@@ -53,12 +56,25 @@ final class DatabaseSchemaCompatibilityTest extends TestCase
 
             $request = new Request(content: '{"url":"https://example.test/database"}');
             $first = $controller->track($request, $entityManager, $dispatcher);
-            $second = $controller->track($request, $entityManager, $dispatcher);
+            $firstData = json_decode((string) $first->getContent(), true, 512, JSON_THROW_ON_ERROR);
+            self::assertIsArray($firstData);
+            $second = $controller->track(
+                new Request(content: json_encode([
+                    'url' => 'https://example.test/database',
+                    'parentHitId' => $firstData['hitId'],
+                ], JSON_THROW_ON_ERROR)),
+                $entityManager,
+                $dispatcher,
+            );
 
             self::assertSame(200, $first->getStatusCode(), (string) $first->getContent());
             self::assertSame(200, $second->getStatusCode(), (string) $second->getContent());
             self::assertSame(1, $entityManager->getRepository(PageCall::class)->count([]));
             self::assertSame(2, $entityManager->getRepository(PageCallHit::class)->count([]));
+            $journeyReport = $journeys->report();
+            self::assertSame(2, $journeyReport->summary->observedHits);
+            self::assertSame(1, $journeyReport->summary->linkedHits);
+            self::assertCount(1, $journeyReport->topTransitions);
 
             $historical = (new PageCall())
                 ->setUrl('https://example.test/database')
