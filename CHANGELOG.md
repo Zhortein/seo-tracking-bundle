@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A dry-run-first command for historical grouping-key inventory and backfill.
 - Explicit duplicate consolidation for the default entities, with a replaceable merger contract for custom entities.
 - An opt-in retention policy and dry-run-first purge command with bounded batches and aggregate repair.
+- A replaceable consent checker plus configurable frontend grant/revoke events, with immediate tracking preserved by default.
 
 ---
 

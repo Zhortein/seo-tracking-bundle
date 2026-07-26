@@ -111,6 +111,17 @@ Tracked data includes:
 
 If JavaScript or `fetch()` is unavailable, the page continues normally and no client-side hit is created.
 
+## Consent integration
+
+The default remains immediate tracking for backward compatibility. Applications can replace a server-side checker and use generic grant/revoke browser events without copying the Twig helper or Stimulus controller:
+
+```javascript
+document.dispatchEvent(new CustomEvent('seo-tracking:consent-granted'));
+document.dispatchEvent(new CustomEvent('seo-tracking:consent-revoked'));
+```
+
+The checker also protects the tracking endpoint; revocation closes an existing hit but does not create a new one or erase historical data. See [`docs/consent.md`](docs/consent.md) for the service contract, configurable event names, CMP integration order and direct Stimulus usage.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).

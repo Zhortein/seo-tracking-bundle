@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
 use Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension;
 
 final class SeoTrackingExtensionTest extends TestCase
@@ -29,6 +30,8 @@ final class SeoTrackingExtensionTest extends TestCase
         self::assertStringContainsString('tracking-type-value="article"', $attributes);
         self::assertStringContainsString('tracking-tracking-url-value="/zhortein/seo-tracking/page-call/track"', $attributes);
         self::assertStringContainsString('tracking-exit-url-value="/zhortein/seo-tracking/page-call/exit"', $attributes);
+        self::assertStringContainsString('tracking-consent-granted-value="true"', $attributes);
+        self::assertStringContainsString('tracking-consent-grant-event-value="seo-tracking:consent-granted"', $attributes);
     }
 
     public function testEndpointsFollowMountedRoutesAndCanBeOverridden(): void
@@ -58,5 +61,24 @@ final class SeoTrackingExtensionTest extends TestCase
         self::assertStringContainsString('https://example.test/a?x=1&amp;y=2', $generated);
         self::assertStringContainsString('tracking-tracking-url-value="https://collector.test/track"', $configured);
         self::assertStringContainsString('tracking-exit-url-value="https://collector.test/exit"', $configured);
+    }
+
+    public function testConsentCheckerAndConfiguredEventsAreRendered(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/pending'));
+        $checker = $this->createStub(TrackingConsentCheckerInterface::class);
+        $checker->method('isGranted')->willReturn(false);
+
+        $attributes = (new SeoTrackingExtension(
+            $requestStack,
+            consentChecker: $checker,
+            consentGrantEvent: 'cmp:analytics-granted',
+            consentRevokeEvent: 'cmp:analytics-revoked',
+        ))->seoTracking();
+
+        self::assertStringContainsString('tracking-consent-granted-value="false"', $attributes);
+        self::assertStringContainsString('tracking-consent-grant-event-value="cmp:analytics-granted"', $attributes);
+        self::assertStringContainsString('tracking-consent-revoke-event-value="cmp:analytics-revoked"', $attributes);
     }
 }
