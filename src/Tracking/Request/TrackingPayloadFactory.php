@@ -10,7 +10,13 @@ final readonly class TrackingPayloadFactory
 {
     public function fromRequest(Request $request): TrackingPayload
     {
-        $data = $this->object(json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR), 'JSON payload');
+        $content = $request->getContent();
+        $decoded = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        if (!str_starts_with(ltrim($content), '{')) {
+            throw new UnsupportedTrackingPayloadException('The JSON payload must be an object.');
+        }
+
+        $data = $this->object($decoded, 'JSON payload');
 
         $url = $this->requiredUrl($data, 'url');
         $canonicalUrl = $this->optionalUrl($data, 'canonicalUrl');

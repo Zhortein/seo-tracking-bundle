@@ -14,7 +14,10 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Zhortein\SeoTrackingBundle\Controller\PageCallController;
 use Zhortein\SeoTrackingBundle\Entity\PageCall;
 use Zhortein\SeoTrackingBundle\Entity\PageCallHit;
+use Zhortein\SeoTrackingBundle\Tests\Fixtures\CollectingInvalidTrackingEventReporter;
 use Zhortein\SeoTrackingBundle\Tests\Fixtures\ConsentDeniedTestKernel;
+use Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReason;
+use Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingEndpoint;
 
 final class ConsentGateTest extends TestCase
 {
@@ -46,6 +49,11 @@ final class ConsentGateTest extends TestCase
             );
             self::assertSame(403, $denied->getStatusCode());
             self::assertSame(0, $entityManager->getRepository(PageCallHit::class)->count([]));
+            $reporter = $container->get(CollectingInvalidTrackingEventReporter::class);
+            self::assertInstanceOf(CollectingInvalidTrackingEventReporter::class, $reporter);
+            self::assertCount(1, $reporter->events);
+            self::assertSame(InvalidTrackingEventReason::CONSENT_DENIED, $reporter->events[0]->reason);
+            self::assertSame(TrackingEndpoint::CREATION, $reporter->events[0]->endpoint);
 
             $pageCall = (new PageCall())
                 ->setUrl('https://example.test/existing')
@@ -76,6 +84,7 @@ final class ConsentGateTest extends TestCase
             );
             self::assertSame(200, $closed->getStatusCode());
             self::assertNotNull($hit->getExitedAt());
+            self::assertCount(1, $reporter->events);
         } finally {
             $kernel->shutdown();
         }

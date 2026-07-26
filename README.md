@@ -134,6 +134,12 @@ The default bot detector now returns an explainable, typed classification while 
 
 See [`docs/bot-classification.md`](docs/bot-classification.md) for default categories, extension contracts, backward compatibility and privacy limitations.
 
+## Invalid request observability
+
+Malformed, unsupported, consent-denied, rate-limited and unknown-hit requests can be sent to a replaceable reporter without creating tracking rows or polluting statistics. The default reporter is a no-op. Its typed event exposes only bounded method/route/content metadata and never forwards the raw payload, IP address or User-Agent.
+
+See [`docs/invalid-events.md`](docs/invalid-events.md) for reason codes, a logger adapter and the fail-closed collection/fail-open reporting behavior.
+
 ## ⚠️ Notes & Best Practices
 
 - Only include the stimulus_controller call once per page (usually in your base layout).

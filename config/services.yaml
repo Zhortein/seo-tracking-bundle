@@ -81,6 +81,9 @@ services:
     Zhortein\SeoTrackingBundle\Tracking\RateLimit\TrackingRateLimiterInterface:
         alias: Zhortein\SeoTrackingBundle\Tracking\RateLimit\AllowAllTrackingRateLimiter
 
+    Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReporterInterface:
+        alias: Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\NullInvalidTrackingEventReporter
+
     Zhortein\SeoTrackingBundle\Twig\SeoTrackingExtension:
         arguments:
             $trackingUrl: '%zhortein_seo_tracking.tracking_url%'

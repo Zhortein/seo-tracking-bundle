@@ -6,17 +6,14 @@ namespace Zhortein\SeoTrackingBundle\Tests\Fixtures;
 
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Zhortein\SeoTrackingBundle\Tracking\Consent\TrackingConsentCheckerInterface;
 use Zhortein\SeoTrackingBundle\Tracking\InvalidEvent\InvalidTrackingEventReporterInterface;
 
-final class ConsentDeniedTestKernel extends TestKernel
+class InvalidEventReportingTestKernel extends TestKernel
 {
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         parent::configureContainer($container, $loader);
 
-        $container->register(DenyTrackingConsentChecker::class);
-        $container->setAlias(TrackingConsentCheckerInterface::class, DenyTrackingConsentChecker::class);
         $container->register(CollectingInvalidTrackingEventReporter::class)->setPublic(true);
         $container->setAlias(
             InvalidTrackingEventReporterInterface::class,
