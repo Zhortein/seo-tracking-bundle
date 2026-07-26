@@ -112,6 +112,9 @@ services:
     Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowserInterface:
         alias: Zhortein\SeoTrackingBundle\Statistics\Pagination\ObservationBrowser
 
+    Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporterInterface:
+        alias: Zhortein\SeoTrackingBundle\Statistics\Export\CsvStatisticsExporter
+
     Zhortein\SeoTrackingBundle\Journey\DataSource\DoctrineJourneyDataSource:
         arguments:
             $pageCallHitClass: '%zhortein_seo_tracking.page_call_hit_class%'

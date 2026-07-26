@@ -416,3 +416,5 @@ A nullable Doctrine JSON column is required for dimensions when the default hit 
 Applications upgrading from an older release must first follow the [1.3 schema migration](docs/upgrade-1.3.md).
 
 For large administrative listings and repeated reports, see [statistics pagination and cache](docs/statistics-performance.md). Both features are opt-in at the application boundary; report caching remains disabled unless a PSR-6 pool and TTL are configured.
+
+Filtered observations can also be exported through the lazy, spreadsheet-safe [streaming CSV API](docs/statistics-export.md). The application remains responsible for exposing a secured route or forwarding rows to an external analytics system.
