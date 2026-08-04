@@ -1,0 +1,5 @@
+{
+  "version": "1.7.2",
+  "milestone_description": "Restore page tracking without custom dimensions by emitting the Stimulus Object value expected by the distributed controller.",
+  "issues": [77]
+}
