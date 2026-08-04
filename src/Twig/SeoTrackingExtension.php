@@ -58,7 +58,7 @@ final readonly class SeoTrackingExtension
             'consent-granted' => $this->consentChecker?->isGranted($request) ?? true,
             'consent-grant-event' => $this->consentGrantEvent,
             'consent-revoke-event' => $this->consentRevokeEvent,
-            'dimensions' => ($this->dimensionNormalizer ?? new TrackingDimensionNormalizer())->normalize($dimensions) ?? [],
+            'dimensions' => ($this->dimensionNormalizer ?? new TrackingDimensionNormalizer())->normalize($dimensions) ?? '{}',
         ];
 
         foreach ($data as $key => $value) {

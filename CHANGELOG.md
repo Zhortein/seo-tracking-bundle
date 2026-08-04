@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [1.7.2] – 2026-08-04
+
+### Fixed
+
+- Rendered empty tracking dimensions as a JSON object so Stimulus accepts the
+  declared `Object` value and page tracking starts without custom dimensions.
+
+---
+
 ## [1.7.1] – 2026-07-26
 
 ### Fixed
