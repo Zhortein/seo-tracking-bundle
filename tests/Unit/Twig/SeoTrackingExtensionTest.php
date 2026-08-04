@@ -38,6 +38,14 @@ final class SeoTrackingExtensionTest extends TestCase
         self::assertStringContainsString('tracking-dimensions-value="{&quot;authenticated&quot;:true,&quot;plan&quot;:&quot;professional&quot;}"', $attributes);
     }
 
+    public function testEmptyDimensionsAreRenderedAsAStimulusObject(): void
+    {
+        $attributes = (new SeoTrackingExtension(new RequestStack()))->seoTracking();
+
+        self::assertStringContainsString('tracking-dimensions-value="{}"', $attributes);
+        self::assertStringNotContainsString('tracking-dimensions-value="[]"', $attributes);
+    }
+
     public function testEndpointsFollowMountedRoutesAndCanBeOverridden(): void
     {
         $requestStack = new RequestStack();
